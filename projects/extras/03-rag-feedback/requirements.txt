@@ -1,0 +1,7 @@
+# Package-local extras for 03-rag-feedback.
+# chromadb is the local vector store for the RAG corpus. It ships a bundled
+# default embedding model (local ONNX MiniLM) so retrieval runs offline once
+# downloaded. Install on top of the shared projects/requirements.txt:
+#   pip install -r 03-rag-feedback/requirements.txt
+
+chromadb>=0.5,<2.0

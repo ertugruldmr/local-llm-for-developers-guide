@@ -1,0 +1,8 @@
+# Package-local extras for 04-fullstack-analyzer.
+# These are HEAVY (torch) and OPTIONAL — only needed for the DistilBERT
+# baseline in backend/compare.py. The FastAPI service and the test suite run
+# without them. Install on top of the shared projects/requirements.txt:
+#   pip install -r 04-fullstack-analyzer/requirements.txt
+
+transformers>=4.40,<5.0
+torch>=2.2,<3.0

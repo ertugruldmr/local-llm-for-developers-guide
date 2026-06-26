@@ -1,0 +1,6 @@
+{ "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Iowan Old Style, Palatino, Georgia, serif",
+    "primaryColor": "#FAF9F5", "primaryTextColor": "#1A1915",
+    "primaryBorderColor": "#C96442", "lineColor": "#566A92",
+    "background": "#F0EEE6" } }

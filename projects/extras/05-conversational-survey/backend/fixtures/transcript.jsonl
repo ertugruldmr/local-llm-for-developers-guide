@@ -1,0 +1,8 @@
+{"role": "assistant", "content": "Thanks for your recent order. How was the item overall?"}
+{"role": "user", "content": "Honestly a bit disappointing. I ended up returning it."}
+{"role": "assistant", "content": "Sorry to hear that. Was the issue more about the sizing or the fabric?"}
+{"role": "user", "content": "The sizing mostly. It ran at least one size small."}
+{"role": "assistant", "content": "Got it. And how did the delivery and the price feel for what you received?"}
+{"role": "user", "content": "Delivery was quick, no complaints there. Price felt a little high for the quality."}
+{"role": "assistant", "content": "Thanks, that's really helpful. One last thing: would a sizing guide have changed your decision?"}
+{"role": "user", "content": "Yeah probably. If I'd known it ran small I'd have ordered up."}

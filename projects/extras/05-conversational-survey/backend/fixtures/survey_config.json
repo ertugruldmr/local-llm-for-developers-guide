@@ -1,0 +1,8 @@
+{
+  "base_question": "Thanks for your recent order. How was the item overall?",
+  "taxonomy": ["sizing", "fabric", "fit", "delivery", "price", "service"],
+  "max_follow_ups": 4,
+  "min_follow_ups": 2,
+  "window_turns": 4,
+  "stop_condition": "all probed topics answered or max_follow_ups reached"
+}

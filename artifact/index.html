@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Local LLMs for Developers — Concept Map</title>
+<style>
+  :root{
+    --bg:#F0EEE6; --surface:#FAF9F5; --card:#FFFFFF;
+    --ink:#1A1915; --muted:#6B6960; --line:#E3DFD3;
+    --accent:#C96442; --accent-dark:#B5523A; --accent-soft:rgba(201,100,66,.12);
+    --prompt:#C96442; --context:#5E8C6A; --harness:#566A92; --tools:#C28840; --projects:#8A6A8F;
+    --t-frontier:#8A4B3C; --t-flagship:#C96442; --t-fast:#C28840; --t-medium:#5E8C6A; --t-small:#566A92; --t-edge:#8A6A8F;
+    --serif:"Iowan Old Style","Palatino Linotype",Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden;}
+  /* ---------- header ---------- */
+  header{position:fixed;top:0;left:0;right:0;z-index:20;padding:14px 22px;
+    background:linear-gradient(180deg,var(--bg) 70%,rgba(240,238,230,0));display:flex;
+    align-items:flex-start;gap:18px;flex-wrap:wrap;}
+  .brand h1{font-family:var(--serif);font-size:21px;font-weight:600;margin:0;letter-spacing:-.01em;}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted);max-width:520px;line-height:1.4;}
+  .toolbar{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .search{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 11px;
+    font-size:13px;width:190px;color:var(--ink);font-family:var(--sans);outline:none;}
+  .search:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .btn{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 12px;
+    font-size:12.5px;color:var(--ink);cursor:pointer;font-family:var(--sans);transition:.15s;}
+  .btn:hover{border-color:var(--accent);color:var(--accent-dark);}
+  .btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  /* ---------- tab bar ---------- */
+  .tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:3px;}
+  .tab{border:none;background:transparent;border-radius:8px;padding:7px 13px;font-size:12.5px;
+    color:var(--muted);cursor:pointer;font-family:var(--sans);transition:.15s;}
+  .tab:hover{color:var(--accent-dark);}
+  .tab.active{background:var(--accent);color:#fff;}
+  /* ---------- view panes (non-graph) ---------- */
+  .pane{position:fixed;inset:0;top:0;z-index:10;overflow-y:auto;background:var(--bg);
+    padding:96px 28px 60px;display:none;}
+  .pane.show{display:block;}
+  .pane-inner{max-width:1080px;margin:0 auto;}
+  /* overview cards */
+  .ov-cluster{margin:0 0 34px;}
+  .ov-cluster h2{font-family:var(--serif);font-size:19px;margin:0 0 4px;display:flex;align-items:center;gap:10px;}
+  .ov-cluster h2 .swatch{width:13px;height:13px;border-radius:4px;display:inline-block;}
+  .ov-cluster .ov-sub{font-size:12.5px;color:var(--muted);margin:0 0 16px;}
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;}
+  .ov-card{background:var(--card);border:1px solid var(--line);border-left-width:4px;border-radius:11px;
+    padding:14px 16px;transition:.15s;}
+  .ov-card:hover{box-shadow:0 4px 18px rgba(20,20,19,.07);}
+  .ov-card .seq{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em;}
+  .ov-card h3{font-family:var(--serif);font-size:16px;margin:3px 0 7px;line-height:1.25;}
+  .ov-card p{font-size:13px;line-height:1.5;color:var(--ink);margin:0 0 10px;}
+  .ov-card ul{margin:0 0 10px;padding-left:17px;}
+  .ov-card li{font-size:12px;line-height:1.5;color:var(--muted);margin-bottom:3px;}
+  .ov-meta{display:flex;flex-direction:column;gap:6px;}
+  .ov-meta a{font-size:12px;color:var(--accent-dark);text-decoration:none;}
+  .ov-meta a:hover{text-decoration:underline;}
+  .ov-prereq{font-size:11.5px;color:var(--muted);}
+  .ov-prereq b{color:var(--ink);font-weight:600;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;}
+  .ov-prereq .pchip{display:inline-block;background:var(--accent-soft);color:var(--accent-dark);
+    border-radius:12px;padding:2px 8px;margin:2px 3px 0 0;font-size:11px;}
+  /* flashcards */
+  .fc-wrap{max-width:560px;margin:0 auto;text-align:center;}
+  .fc-bar{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .fc-count{font-size:12.5px;color:var(--muted);font-family:var(--mono);}
+  .fc-card{background:var(--card);border:1px solid var(--line);border-radius:16px;min-height:340px;
+    padding:34px 30px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;
+    box-shadow:0 6px 26px rgba(20,20,19,.06);transition:.15s;border-top:5px solid var(--line);}
+  .fc-card:hover{box-shadow:0 10px 34px rgba(20,20,19,.10);}
+  .fc-tag{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#fff;
+    align-self:center;padding:3px 10px;border-radius:20px;margin-bottom:18px;}
+  .fc-front{font-family:var(--serif);font-size:28px;line-height:1.2;}
+  .fc-hint{font-size:12px;color:var(--muted);margin-top:18px;}
+  .fc-back{text-align:left;}
+  .fc-back p{font-size:15px;line-height:1.6;margin:0 0 14px;}
+  .fc-back h4{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;}
+  .fc-back ul{margin:0;padding-left:18px;}
+  .fc-back li{font-size:13.5px;line-height:1.55;margin-bottom:5px;}
+  /* outline */
+  .outline h2{font-family:var(--serif);font-size:19px;margin:26px 0 4px;display:flex;align-items:center;gap:10px;}
+  .outline h2 .swatch{width:13px;height:13px;border-radius:4px;display:inline-block;}
+  .outline h3{font-family:var(--serif);font-size:15px;margin:16px 0 4px;}
+  .outline p.b{font-size:13px;color:var(--muted);margin:0 0 6px;line-height:1.5;}
+  .outline ul{margin:0 0 4px;padding-left:20px;}
+  .outline li{font-size:13px;line-height:1.55;margin-bottom:3px;}
+  .outline a{color:var(--accent-dark);text-decoration:none;}
+  .outline a:hover{text-decoration:underline;}
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:22px 0;}
+  .diagram figcaption{font-size:12px;color:var(--muted);margin-top:10px;text-align:center;font-style:italic;}
+  .diagram svg{width:100%;height:auto;max-width:640px;display:block;margin:0 auto;}
+  /* hub panel */
+  .hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:8px;}
+  .hub-card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:14px 16px;}
+  .hub-card .k{font-family:var(--serif);font-size:15px;margin:0 0 4px;}
+  .hub-card .d{font-size:12.5px;color:var(--muted);margin:0 0 8px;line-height:1.45;}
+  .hub-card .tok{font-family:var(--mono);font-size:12px;background:var(--accent-soft);color:var(--accent-dark);
+    border-radius:7px;padding:5px 9px;display:inline-block;word-break:break-all;}
+  .pane h1.pane-title{font-family:var(--serif);font-size:24px;margin:0 0 6px;}
+  .pane p.pane-lead{font-size:13.5px;color:var(--muted);margin:0 0 26px;max-width:620px;line-height:1.5;}
+  /* ---------- node tooltip ---------- */
+  #tooltip{position:fixed;z-index:40;pointer-events:none;max-width:240px;background:var(--ink);color:#fff;
+    font-size:12px;line-height:1.45;padding:8px 11px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.25);
+    opacity:0;transition:opacity .12s;}
+  #tooltip.show{opacity:1;}
+  #tooltip b{display:block;margin-bottom:3px;font-size:12.5px;}
+  /* ---------- legend ---------- */
+  .legend{position:fixed;left:22px;bottom:18px;z-index:15;display:flex;gap:14px;flex-wrap:wrap;
+    background:rgba(250,249,245,.82);backdrop-filter:blur(4px);border:1px solid var(--line);
+    border-radius:11px;padding:9px 13px;font-size:12px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted);cursor:pointer;user-select:none;}
+  .legend .dot{width:10px;height:10px;border-radius:50%;}
+  .legend span.off{opacity:.32;}
+  .hint{position:fixed;right:22px;bottom:18px;z-index:15;font-size:11.5px;color:var(--muted);
+    background:rgba(250,249,245,.82);border:1px solid var(--line);border-radius:9px;padding:7px 11px;}
+  /* ---------- graph ---------- */
+  #stage{position:fixed;inset:0;cursor:grab;}
+  #stage.grabbing{cursor:grabbing;}
+  svg{width:100%;height:100%;display:block;}
+  .edge{stroke:var(--line);stroke-width:1.1;fill:none;transition:stroke .2s,opacity .2s,stroke-width .2s;}
+  .edge.xref{stroke-dasharray:4 4;stroke:#C9A98F;}
+  .edge.lit{stroke:var(--accent);stroke-width:2;opacity:1;}
+  .node{cursor:pointer;}
+  .node circle{transition:transform .18s,opacity .18s,stroke-width .18s;stroke:var(--surface);stroke-width:2;}
+  .node text{font-family:var(--sans);fill:var(--ink);pointer-events:none;transition:opacity .18s,font-weight .1s;}
+  .node .lbl{font-size:11px;}
+  .node.hub .lbl{font-size:13.5px;font-weight:600;font-family:var(--serif);}
+  .node.root .lbl{font-size:17px;font-weight:600;font-family:var(--serif);}
+  .node:hover circle, .node.sel circle{stroke:var(--ink);}
+  .dim{opacity:.12;}
+  .dim text{opacity:.15;}
+  /* ---------- detail drawer ---------- */
+  #drawer{position:fixed;top:0;right:0;height:100%;width:380px;max-width:88vw;z-index:30;
+    background:var(--surface);border-left:1px solid var(--line);box-shadow:-12px 0 40px rgba(20,20,19,.10);
+    transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    display:flex;flex-direction:column;}
+  #drawer.open{transform:translateX(0);}
+  .dw-head{padding:22px 22px 14px;border-bottom:1px solid var(--line);}
+  .dw-tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    padding:3px 9px;border-radius:20px;color:#fff;margin-bottom:11px;}
+  .dw-head h2{font-family:var(--serif);font-size:22px;margin:0;line-height:1.2;letter-spacing:-.01em;}
+  .dw-body{padding:18px 22px;overflow-y:auto;flex:1;}
+  .dw-body p.brief{font-size:14.5px;line-height:1.6;color:var(--ink);margin:0 0 18px;}
+  .dw-body h3{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:18px 0 9px;}
+  .dw-body ul{margin:0;padding-left:18px;}
+  .dw-body li{font-size:13.5px;line-height:1.55;color:var(--ink);margin-bottom:5px;}
+  .links{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+  .links a{display:flex;align-items:center;gap:8px;font-size:13px;text-decoration:none;color:var(--accent-dark);
+    background:var(--card);border:1px solid var(--line);border-radius:9px;padding:10px 12px;transition:.15s;}
+  .links a:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .links a .ar{margin-left:auto;color:var(--muted);}
+  .xrefchips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:12px;border:1px solid var(--line);background:var(--card);border-radius:20px;
+    padding:5px 10px;cursor:pointer;color:var(--ink);transition:.15s;}
+  .chip:hover{border-color:var(--accent);color:var(--accent-dark);}
+  .dw-close{position:absolute;top:16px;right:16px;border:none;background:transparent;font-size:22px;
+    color:var(--muted);cursor:pointer;line-height:1;}
+  .dw-close:hover{color:var(--ink);}
+  /* review mode banner */
+  #reveal{margin-top:14px;}
+  .reveal-btn{width:100%;border:1px dashed var(--accent);background:var(--accent-soft);color:var(--accent-dark);
+    border-radius:9px;padding:11px;font-size:13px;cursor:pointer;font-family:var(--sans);}
+  @media (max-width:640px){
+    .brand p{display:none;} .search{width:130px;}
+    #drawer{width:100%;}
+  }
+  /* ---------- hardware pane (model ↔ GPU sizing) ---------- */
+  .hw-panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 17px;margin:0 0 16px;
+    display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end;}
+  .hw-ctl{display:flex;flex-direction:column;gap:6px;}
+  .hw-ctl label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .hw-seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:3px;}
+  .hw-seg button{border:none;background:transparent;border-radius:6px;padding:6px 11px;font-size:12.5px;color:var(--muted);
+    cursor:pointer;font-family:var(--sans);transition:.12s;white-space:nowrap;}
+  .hw-seg button:hover{color:var(--accent-dark);}
+  .hw-seg button.on{background:var(--accent);color:#fff;}
+  .hw-panel select{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:13px;
+    font-family:var(--sans);color:var(--ink);outline:none;min-width:210px;}
+  .hw-panel select:focus{border-color:var(--accent);}
+  .hw-toggle{font-size:12.5px;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 12px;cursor:pointer;color:var(--muted);}
+  .hw-toggle.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .hw-readout{font-size:13px;color:var(--ink);background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;
+    padding:11px 14px;margin:0 0 18px;line-height:1.5;}
+  .hw-readout b{color:var(--accent-dark);}
+  .hw-chart{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 16px 16px;position:relative;}
+  .hw-axis{position:relative;height:22px;margin:6px 0 2px 0;}
+  .hw-axis .hw-tk{position:absolute;transform:translateX(-50%);font-size:10px;color:var(--muted);font-family:var(--mono);top:6px;}
+  .hw-axis .hw-tk:before{content:"";position:absolute;left:50%;top:-6px;width:1px;height:6px;background:var(--line);}
+  .hw-rows{position:relative;}
+  .hw-thresh{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);z-index:5;pointer-events:none;}
+  .hw-thresh .hw-cap{position:absolute;top:-2px;left:5px;font-size:10.5px;color:#fff;background:var(--accent);
+    border-radius:5px;padding:2px 7px;white-space:nowrap;font-family:var(--mono);font-weight:600;}
+  .hw-row{display:grid;grid-template-columns:230px 1fr 150px;gap:12px;align-items:center;padding:5px 0;border-top:1px solid #F2EFE6;}
+  .hw-row:first-child{border-top:none;}
+  .hw-mname{font-size:13px;font-weight:600;line-height:1.2;}
+  .hw-mname .hw-org{font-weight:400;color:var(--muted);font-size:11px;}
+  .hw-mmeta{font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
+  .hw-star{color:var(--accent-dark);font-weight:700;}
+  .hw-peer{font-size:10.5px;color:var(--t-flagship);margin-top:2px;display:none;}
+  .hw-show-peers .hw-peer{display:block;}
+  .hw-track{position:relative;height:24px;background:#F4F1E8;border-radius:6px;overflow:hidden;}
+  .hw-bar{position:absolute;left:0;top:0;bottom:0;border-radius:6px;transition:width .35s cubic-bezier(.4,0,.2,1);min-width:3px;}
+  .hw-fit{display:flex;align-items:center;gap:7px;justify-content:flex-end;font-size:12px;}
+  .hw-gb{font-family:var(--mono);color:var(--muted);font-size:11.5px;}
+  .hw-badge{font-family:var(--mono);font-size:11px;font-weight:600;border-radius:6px;padding:3px 8px;white-space:nowrap;}
+  .hw-b-ok{background:rgba(94,140,106,.16);color:#3f6b4c;}
+  .hw-b-mid{background:rgba(194,136,64,.18);color:#8a5e1e;}
+  .hw-b-bad{background:rgba(201,100,66,.16);color:var(--accent-dark);}
+  .hw-tdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+  /* closed-frontier estimate styling: dashed/hatched, muted, never mistaken for measured */
+  .hw-row.hw-est{opacity:.92;}
+  .hw-bar.hw-est-bar{background:repeating-linear-gradient(45deg,rgba(138,75,60,.42) 0 6px,rgba(138,75,60,.16) 6px 12px) !important;
+    border:1px dashed var(--t-frontier);}
+  .hw-estbadge{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.02em;color:var(--muted);
+    border:1px dashed var(--muted);border-radius:5px;padding:1px 6px;margin-left:6px;background:var(--surface);white-space:nowrap;}
+  .hw-fit .hw-badge.hw-b-est{background:var(--surface);color:var(--muted);border:1px dashed var(--muted);}
+  /* GPU-units sub-view */
+  .hw-units-row{display:grid;grid-template-columns:230px 1fr 150px;gap:12px;align-items:center;padding:6px 0;border-top:1px solid #F2EFE6;}
+  .hw-units-row:first-child{border-top:none;}
+  .hw-glyphs{display:flex;flex-wrap:wrap;gap:3px;align-items:center;min-height:22px;}
+  .hw-gpuicon{flex:0 0 auto;}
+  .hw-glyphs .hw-more{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-left:3px;align-self:center;}
+  .hw-units-count{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);justify-self:end;white-space:nowrap;}
+  .hw-units-count.hw-est-count{color:var(--muted);font-weight:600;}
+  #hwUnits{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 16px 16px;}
+  .hw-mode-units #hwChart{display:none;}
+  .hw-mode-units #hwUnits{display:block;}
+  .hw-legend{display:flex;gap:16px;flex-wrap:wrap;margin:14px 2px 0;font-size:12px;color:var(--muted);}
+  .hw-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .hw-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin-top:26px;}
+  .hw-callout{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:11px;padding:14px 16px;}
+  .hw-callout h3{font-family:var(--serif);font-size:16px;margin:0 0 7px;}
+  .hw-callout p{font-size:13px;color:var(--ink);margin:0;line-height:1.55;}
+  .hw-callout code{font-family:var(--mono);font-size:12px;background:var(--accent-soft);border-radius:5px;padding:1px 5px;}
+  h2.hw-sec{font-family:var(--serif);font-size:20px;margin:38px 0 10px;border-bottom:2px solid var(--line);padding-bottom:7px;}
+  #pane-hardware table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card);border:1px solid var(--line);border-radius:11px;overflow:hidden;}
+  #pane-hardware th,#pane-hardware td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);}
+  #pane-hardware th{background:var(--surface);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);}
+  #pane-hardware tr:last-child td{border-bottom:none;}
+  #pane-hardware td .hw-cl{font-weight:600;}
+  .hw-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:14px;}
+  .hw-note b{color:var(--ink);}
+  .hw-note code{font-family:var(--mono);font-size:11.5px;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:1px 5px;}
+  @media (max-width:680px){
+    .hw-row{grid-template-columns:140px 1fr;}
+    .hw-fit{grid-column:1 / -1;justify-content:flex-start;padding-left:140px;}
+    .hw-axis{display:none;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>Local LLMs for Developers</h1>
+    <p>An interactive map of the guide. Hover a concept to focus it, click to read a summary and jump to the full section. Use it to navigate — and to review.</p>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-view="graph">Graph</button>
+    <button class="tab" data-view="overview">Overview</button>
+    <button class="tab" data-view="flashcards">Flashcards</button>
+    <button class="tab" data-view="outline">Outline</button>
+    <button class="tab" data-view="hub">Hub</button>
+    <button class="tab" data-view="hardware">Hardware</button>
+  </div>
+  <div class="toolbar">
+    <input id="search" class="search" placeholder="Search concepts…" autocomplete="off"/>
+    <button id="reviewBtn" class="btn">Review mode</button>
+    <button id="copyMdBtn" class="btn" title="Copy the whole guide as Markdown">Copy as Markdown</button>
+    <button id="resetBtn" class="btn">Reset view</button>
+  </div>
+</header>
+
+<div id="stage">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg">
+    <g id="viewport">
+      <g id="edges"></g>
+      <g id="nodes"></g>
+    </g>
+  </svg>
+</div>
+
+<div class="legend" id="legend"></div>
+<div class="hint">Scroll to zoom · drag to pan · click a node</div>
+
+<aside id="drawer">
+  <div class="dw-head">
+    <button class="dw-close" id="dwClose">×</button>
+    <span class="dw-tag" id="dwTag"></span>
+    <h2 id="dwTitle"></h2>
+  </div>
+  <div class="dw-body" id="dwBody"></div>
+</aside>
+
+<div id="tooltip"></div>
+
+<section class="pane" id="pane-overview"><div class="pane-inner">
+  <h1 class="pane-title">Overview</h1>
+  <p class="pane-lead">Every concept as an ordered card, grouped by pillar. Sequence numbers follow the reading order; prerequisites are derived from the cross-link constellation.</p>
+  <div id="ovRoot"></div>
+</div></section>
+
+<section class="pane" id="pane-flashcards"><div class="pane-inner">
+  <h1 class="pane-title">Flashcards</h1>
+  <p class="pane-lead">Active recall over every concept. Read the label, recall what it means, then flip to check. Builds on Review mode.</p>
+  <div class="fc-wrap">
+    <div class="fc-bar">
+      <button class="btn" id="fcPrev">‹ Prev</button>
+      <span class="fc-count" id="fcCount"></span>
+      <button class="btn" id="fcNext">Next ›</button>
+      <button class="btn" id="fcShuffle">Shuffle</button>
+    </div>
+    <div class="fc-card" id="fcCard"></div>
+  </div>
+</div></section>
+
+<section class="pane" id="pane-outline"><div class="pane-inner">
+  <h1 class="pane-title">Outline</h1>
+  <p class="pane-lead">A linear, copy-friendly map of the whole guide, with the five reference diagrams inlined.</p>
+  <div class="outline" id="outlineRoot"></div>
+</div></section>
+
+<section class="pane" id="pane-hub"><div class="pane-inner">
+  <h1 class="pane-title">Hub · the link constellation</h1>
+  <p class="pane-lead">Every surface of this guide links to the rest. These tokens are filled at publish time — they are intentionally literal placeholders here.</p>
+  <div class="hub-grid" id="hubRoot"></div>
+</div></section>
+
+<section class="pane" id="pane-hardware"><div class="pane-inner">
+  <h1 class="pane-title">Hardware · what can you actually run?</h1>
+  <p class="pane-lead">Open-weight LLMs sized against the hardware needed to <em>serve</em> them — from a 1B edge model to a ~1&nbsp;trillion-parameter MoE that needs a GPU node. Pick a precision and a GPU; the bars and the orange line redraw to show what fits in one unit and what needs many — or flip <b>View → GPU units</b> to see the raw card count as a row of GPU icons. Closed frontier models map to a rough <em>capability</em> tier (they don't publish sizes), shown dashed and labeled "est."</p>
+
+  <div class="hw-panel">
+    <div class="hw-ctl">
+      <label>Precision</label>
+      <div class="hw-seg" id="hwSegPrec">
+        <button data-m="native" class="on">Native</button>
+        <button data-m="bf16">BF16</button>
+        <button data-m="fp8">FP8</button>
+        <button data-m="q4">Q4</button>
+      </div>
+    </div>
+    <div class="hw-ctl">
+      <label>Compare against</label>
+      <select id="hwGpu"></select>
+    </div>
+    <div class="hw-ctl">
+      <label>Scale</label>
+      <div class="hw-seg" id="hwSegScale">
+        <button data-s="log" class="on">Log</button>
+        <button data-s="lin">Linear</button>
+      </div>
+    </div>
+    <div class="hw-ctl">
+      <label>View</label>
+      <div class="hw-seg" id="hwSegView">
+        <button data-v="bars" class="on">Bars</button>
+        <button data-v="units">GPU units</button>
+      </div>
+    </div>
+    <div class="hw-ctl">
+      <label>Closed peers</label>
+      <button class="hw-toggle" id="hwTgPeers">Show capability tier</button>
+    </div>
+  </div>
+
+  <div class="hw-readout" id="hwReadout"></div>
+
+  <div class="hw-chart" id="hwChart">
+    <div class="hw-rows" id="hwRows"></div>
+    <div class="hw-axis" id="hwAxis"></div>
+  </div>
+  <div id="hwUnits"></div>
+  <div class="hw-legend" id="hwLegend"></div>
+
+  <div class="hw-grid2">
+    <div class="hw-callout">
+      <h3>The gpt-oss trick: sized to the GPU</h3>
+      <p>OpenAI ships <code>gpt-oss-120b</code> with its MoE expert weights in <b>MXFP4</b> (~4.25 bits/param). Those experts are 90%+ of the weights, so the whole 117B model lands near <b>~60–65&nbsp;GB</b> — under one 80&nbsp;GB H100/MI300X. <code>gpt-oss-20b</code> was sized the same way to fit a <b>16&nbsp;GB</b> consumer card. The architecture was tuned to the hardware unit, not the other way around.</p>
+    </div>
+    <div class="hw-callout">
+      <h3>80 GB is the packing unit</h3>
+      <p>Datacenter serving rounds up to whole 80&nbsp;GB (H100) or 141&nbsp;GB (H200) GPUs. DeepSeek-V3 at native FP8 is ~670&nbsp;GB of weights → it <b>overflows</b> an 8×H100 node (640&nbsp;GB) but fits an 8×H200 node (1,128&nbsp;GB). Flip precision to Q4 and it drops to ~4–6 GPUs.</p>
+    </div>
+    <div class="hw-callout">
+      <h3>MoE saves compute, not memory</h3>
+      <p>A Mixture-of-Experts model only <em>computes</em> its active params per token (Kimi K2.6: 32B of ~1T; DeepSeek-V4-Pro: 49B of 1.6T), so it's fast for its size — but <b>every expert must still be resident in VRAM</b>. Capacity is set by total params; throughput by active params.</p>
+    </div>
+    <div class="hw-callout">
+      <h3>Apple: capacity vs bandwidth</h3>
+      <p>A 512&nbsp;GB M3&nbsp;Ultra (~384&nbsp;GB usable) can hold a model that otherwise needs a multi-GPU server — on one quiet desktop. But its ~819&nbsp;GB/s is ~¼ of an H100's bandwidth, so tokens/sec are far lower. Great for one developer; not for high-concurrency serving.</p>
+    </div>
+  </div>
+
+  <h2 class="hw-sec">Open weight → closed capability tier</h2>
+  <p class="hw-note" style="margin-top:0">Rough mapping of where each open tier lands relative to the closed frontier. This is a <b>capability ballpark, not a benchmark or a size claim</b> — closed models don't publish parameter counts, and rankings shift monthly. Verify on your own task before trusting it.</p>
+  <table id="hwTiers"></table>
+
+  <h2 class="hw-sec">How the numbers are computed</h2>
+  <p class="hw-note">
+  <b>Serve estimate</b> = total params × bytes-per-param × 1.2 (the 20% covers KV cache + activations + fragmentation at modest context). Bytes/param: BF16 = 2.0, FP8/INT8 = 1.0, Q4 ≈ 0.5, MXFP4 ≈ 0.55. <b>Native</b> uses the precision each model actually ships in (gpt-oss → MXFP4, DeepSeek/Kimi/Mistral-Large-3 → FP8, the rest → BF16) — flip to <b>Q4</b> to see the typical <em>local</em> footprint people run.<br><br>
+  <b>GPU count</b> = ⌈serve ÷ unit capacity⌉. Apple unit capacity is ~70% of nominal unified memory (OS reserves the rest). Long context (&gt;32K) and high concurrency grow KV cache sharply — treat these as <em>weight-fit floors</em>, add headroom for production. MoE keeps all experts resident, so memory tracks total params even though only active params compute.<br><br>
+  Figures verified June 2026 against model cards (DeepSeek-V4 Pro/Flash, DeepSeek-V3.2, Kimi K2.6, Qwen3.6, GLM-5.1, GLM-4.6, Qwen3, Gemma 3, gpt-oss, Mistral, Phi-4) and vendor GPU specs. <b>Closed frontier models (GPT-5.5, Gemini 3 Pro, Claude Opus 4.x, Grok 4) are shown dashed and labeled "est."</b> — those labs don't publish parameter counts, so their placements are rough capability-based estimates for context only, never measured sizes. The landscape moves monthly — re-check before any presentation. Full standalone version + sources: <code>_manuel/notes/lm-studio/hardware.html</code>; sizing mirrored in <code>model-table.md</code>.
+  </p>
+</div></section>
+
+<script>
+/* ====================================================================
+   CONFIG — edit ARTICLE_BASE after publishing (e.g. your Medium URL).
+   While it points to the repo's article files, links work locally too.
+==================================================================== */
+const ARTICLE_BASE = "../article/";   // or "{{MEDIUM_URL}}" once published
+const FILE = { prompt:"part-1-concepts.md", context:"part-1-concepts.md",
+  harness:"part-1-concepts.md", tools:"part-2-tools.md", projects:"part-4-projects.md" };
+
+const CLUSTERS = {
+  root:    {label:"Local LLMs",            color:"#1A1915"},
+  prompt:  {label:"Prompt Engineering",    color:"var(--prompt)"},
+  context: {label:"Context Engineering",   color:"var(--context)"},
+  harness: {label:"Harness & Agents",      color:"var(--harness)"},
+  tools:   {label:"The Tools",             color:"var(--tools)"},
+  projects:{label:"Hands-on Projects",     color:"var(--projects)"}
+};
+const HEX = {prompt:"#C96442",context:"#5E8C6A",harness:"#566A92",tools:"#C28840",projects:"#8A6A8F",root:"#1A1915"};
+
+/* ---- nodes: leaves of each cluster ---- */
+const N = [
+  // PROMPT
+  ["a1","Prompt anatomy","prompt","The 6 parts of a prompt (instruction, role, context, input, output indicator, examples) plus message roles and delimiters.",["system / developer / user / tool roles","XML & Markdown delimiters","why structure beats tone on small models"],["InstructGPT (Ouyang 2022)","https://arxiv.org/abs/2203.02155"]],
+  ["a2","Zero-shot","prompt","Asking with no examples, relying on pretraining. The baseline mode.",["good for common tasks","degrades on niche formats"],null],
+  ["a3","Few-shot","prompt","Showing 1–N examples so the model infers the pattern — the cheapest way to lock tone & format.",["one-shot vs few-shot","example selection","→ examples can be RAG-retrieved"],["GPT-3 (Brown 2020)","https://arxiv.org/abs/2005.14165"]],
+  ["a4","Chain-of-thought","prompt","Prompting for intermediate reasoning before the answer; raises multi-step accuracy.",["'think step by step'","→ built into reasoning models"],["Wei 2022","https://arxiv.org/abs/2201.11903"]],
+  ["a5","Decomposition","prompt","Breaking a hard task into ordered sub-tasks (least-to-most, tree-of-thought).",["least-to-most","tree of thoughts","→ multi-turn agents"],["Tree of Thoughts (Yao 2023)","https://arxiv.org/abs/2305.10601"]],
+  ["a6","Structured output","prompt","Forcing machine-readable JSON to a schema — what makes an LLM safe to wire into software.",["JSON mode / response_format","Pydantic validation","→ every Part 4 project"],null],
+  ["a7","Guardrails","prompt","Negative instructions, length/style/safety limits, refusal behavior.",["negative prompting","length & tone caps"],null],
+  ["a8","Templates","prompt","Parameterized, reusable prompts with variables.",["variables","reuse across calls"],null],
+  ["a9","Prompts-as-files","prompt","Durable prompts in the repo: AGENTS.md, CLAUDE.md, SKILL.md — read automatically by agents.",["AGENTS.md (cross-tool)","CLAUDE.md (always-loaded)","SKILL.md (lazy-loaded)"],null],
+  ["a10","Meta-prompting","prompt","Using prompts to write/refine prompts; chaining outputs into pipelines.",["prompt chaining","self-generated prompts"],null],
+  // CONTEXT
+  ["b1","Context window","context","The model's finite working memory in tokens; input + output share it. Every choice is a budget choice.",["~128K typical local cap","usable < maximum"],null],
+  ["b2","Context rot","context","Quality drops when the window is stuffed; the middle is recalled worst.",["lost-in-the-middle","curate, don't dump"],["Liu 2023","https://arxiv.org/abs/2307.03172"]],
+  ["b3","Prompt caching","context","Reuse the KV-cache of a stable prefix — up to ~90% savings. Rule: static-first ordering.",["static content first","dynamic content last","→ ties to prompt anatomy"],null],
+  ["b4","RAG","context","Retrieve relevant text at query time and inject it: chunk → embed → store → retrieve → inject.",["local /v1/embeddings","Chroma / FAISS","→ dynamic few-shot"],["RAG (Lewis 2020)","https://arxiv.org/abs/2005.11401"]],
+  ["b5","Memory","context","Short-term (conversation) vs long-term (persistent, retrieved across sessions).",["conversation buffer","persistent memory files","→ subagents"],["MemGPT","https://arxiv.org/abs/2310.08560"]],
+  ["b6","Compaction","context","Replace older turns with a running summary to fit the window.",["rolling summaries","keep long sessions coherent"],null],
+  ["b7","Tool-result mgmt","context","Trim/summarize verbose tool output before it re-enters context. High-leverage in agents.",["prune file dumps","summarize API responses"],null],
+  ["b8","Grounding","context","Tie answers to retrieved sources and cite them — the main defense against hallucination.",["citations","refuse when unsupported"],null],
+  ["b9","Long-ctx vs RAG vs cache","context","Three ways to get info to the model; a decision cheat-sheet (often combine).",["RAG: large/changing corpus","long-context: few docs","cache: reused prefix"],null],
+  // HARNESS
+  ["c1","Harness","harness","The runtime between model and world: connection, tools, dispatch, context control.",["gives the model hands","opencode/Claude Code/Crush"],["What is an agent harness","https://www.firecrawl.dev/blog/what-is-an-agent-harness"]],
+  ["c2","Agent","harness","An LLM in a loop with tools and a goal, acting until done.",["loop + tools + goal"],null],
+  ["c3","Agent loop / ReAct","harness","reason → act (tool) → observe → repeat. ~60% of agent projects use it.",["reason-act-observe","most common pattern"],["ReAct (Yao 2022)","https://arxiv.org/abs/2210.03629"]],
+  ["c4","Multi-turn","harness","Sustaining one goal across many loop iterations (edit, test, fix).",["long-horizon tasks","= decomposition in motion"],null],
+  ["c5","Tool calling","harness","Model emits a structured call; harness runs it; result returns. The hinge of the agentic era.",["function calling","tool messages"],["Toolformer (Schick 2023)","https://arxiv.org/abs/2302.04761"]],
+  ["c6","Reasoning models","harness","Models that emit an internal reasoning trace before answering. The 'Synthesizing…' words you see are this.",["extended thinking","status words = CoT surface"],["Wei 2022","https://arxiv.org/abs/2201.11903"]],
+  ["c7","Reflection","harness","The agent critiques and fixes its own output before continuing.",["self-critique","self-correction"],["Reflexion (Shinn 2023)","https://arxiv.org/abs/2303.11366"]],
+  ["c8","Steering","harness","Human-in-the-loop control: plan vs build mode, interrupt, redirect, approve.",["plan vs build","mid-task correction"],null],
+  ["c9","Planning","harness","Explicitly generating a plan before acting.",["plan-then-execute"],null],
+  ["c10","Subagents","harness","Delegating to isolated agents with their own context/tools; can run async.",["isolated context","async delegation"],["AutoGen","https://arxiv.org/abs/2308.08155"]],
+  ["c11","Skills & learning","harness","Reusable capabilities loaded on demand — or learned from experience and persisted.",["SKILL.md capabilities","continuous learning (claim)"],["Voyager","https://arxiv.org/abs/2305.16291"]],
+  ["c12","MCP","harness","Open standard to give agents external tools/data through a uniform interface.",["the 'USB-C' for tools"],["Model Context Protocol","https://modelcontextprotocol.io"]],
+  ["c13","Permissions","harness","What an agent may execute: read-only, allow-lists, sandboxes.",["never raw prod shell","approval gates"],null],
+  ["c14","Observability","harness","Recording what the agent did and why — calls, reasoning, cost.",["traces","debuggability"],null],
+  ["c15","Execution patterns","harness","Loop, event-driven, state-machine, graph/flow, hybrid control models.",["recognize how a tool is built"],["Awesome Harness Eng.","https://github.com/ai-boost/awesome-harness-engineering"]],
+  // TOOLS
+  ["t_lm","LM Studio","tools","The engine: GUI to run models AND serve them OpenAI/Anthropic-compatible at :1234.",["serve once, swap by base URL","no auth — firewall it"],["LM Studio docs","https://lmstudio.ai/docs/developer/core/server"]],
+  ["t_roo","Roo / Kilo Code","tools","VS Code agent extensions; point them at LM Studio for in-editor coding.",["code/architect/ask modes","GUI over the agent loop"],["Roo + LM Studio","https://docs.roocode.com/providers/lmstudio"]],
+  ["t_cc","Claude Code","tools","Terminal harness; subscription (frontier) OR local via ANTHROPIC_BASE_URL.",["best skills/hooks ecosystem","local path to LM Studio"],["Claude Code + local","https://renezander.com/guides/claude-code-local-llm-anthropic-base-url/"]],
+  ["t_oc","opencode","tools","Fully open-source terminal harness; provider-agnostic incl. local. The open counterpart to Claude Code.",["75+ providers","plan/build, sessions"],["opencode docs","https://opencode.ai/docs/"]],
+  ["t_herm","Hermes Agent","tools","Open self-improving agent: persistent memory, async subagents, multi-surface, runs local.",["learns skills (claim)","memory across sessions"],["Hermes Agent","https://hermes-agent.nousresearch.com/"]],
+  ["t_ecc","ECC + best-practice","tools","Reference repos of skills, subagents, hooks, rules — turn a basic agent into a disciplined one.",["Everything Claude Code","claude-code-best-practice"],["ECC","https://github.com/affaan-m/ECC"]],
+  // PROJECTS
+  ["p1","P1 · Review Analyzer","projects","Batch reviews → structured JSON insight → dashboard; LLM vs DistilBERT comparison.",["structured output","smallest-tool lesson"],null],
+  ["p2","P2 · AI-Survey Bot","projects","Multi-turn agent asks adaptive follow-ups, emits a structured summary.",["multi-turn","memory + compaction"],null],
+  ["p3","P3 · Feedback RAG","projects","RAG over specs + feedback with local embeddings & citations, fully offline.",["local embeddings","grounded answers"],null],
+  ["p4","P4 · Copy Generator","projects","Generate survey questions or TR/EN product copy as validated JSON.",["few-shot","structured output"],null],
+  ["p5","P5 · Reward Message","projects","Personalized reward message + auditable reasoning field.",["guardrails","auditability"],null],
+  ["p6","P6 · Agentic Capstone","projects","Build P1's backend USING an agent driven by AGENTS.md + a SKILL.md.",["the harness builds the app","open vs subscription path"],null],
+];
+
+/* cross-reference (dashed) edges */
+const XREF = [["a3","b4"],["a4","c6"],["a9","c11"],["a1","b3"],["b5","c10"],["a6","p1"],["b4","p3"],["a9","t_ecc"],["c5","t_oc"],["c1","t_cc"]];
+
+/* ---------- build graph data ---------- */
+const clusterOrder = ["prompt","context","harness","tools","projects"];
+const nodes = {}; const list = [];
+function add(id,label,cluster,type,brief,sub,paper){ const o={id,label,cluster,type,brief:brief||"",sub:sub||[],paper:paper||null}; nodes[id]=o; list.push(o); }
+add("root","Local LLMs","root","root","The four-layer journey: concepts → tools → serve & code → build.",["Hover to focus · click to read"],null);
+clusterOrder.forEach(c=>add("hub_"+c,CLUSTERS[c].label,c,"hub",CLUSTERS[c].label,[],null));
+N.forEach(r=>add(r[0],r[1],r[2],"leaf",r[3],r[4],r[5]));
+
+/* edges: root-hub, hub-leaf, xref */
+const edges=[];
+clusterOrder.forEach(c=>edges.push({a:"root",b:"hub_"+c,t:"tree"}));
+N.forEach(r=>edges.push({a:"hub_"+r[2],b:r[0],t:"tree"}));
+XREF.forEach(p=>edges.push({a:p[0],b:p[1],t:"xref"}));
+
+/* adjacency for highlighting */
+const adj={}; list.forEach(n=>adj[n.id]=new Set());
+edges.forEach(e=>{adj[e.a].add(e.b);adj[e.b].add(e.a);});
+
+/* ---------- layout (radial, proportional sectors) ---------- */
+const VW=1600, VH=1100, CX=800, CY=545;
+const R_HUB=205, R_LEAF=[360,470];
+function layout(){
+  nodes.root.x=CX; nodes.root.y=CY;
+  const counts=clusterOrder.map(c=>N.filter(r=>r[2]===c).length);
+  const total=counts.reduce((a,b)=>a+b,0);
+  const gap=10*Math.PI/180; const gaps=gap*clusterOrder.length;
+  const span=(2*Math.PI-gaps)/total;
+  let ang=-Math.PI/2; // start at top
+  clusterOrder.forEach((c,ci)=>{
+    const cnt=counts[ci]; const w=cnt*span;
+    const mid=ang+w/2;
+    const hub=nodes["hub_"+c];
+    hub.x=CX+R_HUB*Math.cos(mid); hub.y=CY+R_HUB*Math.sin(mid);
+    const leaves=N.filter(r=>r[2]===c).map(r=>r[0]);
+    const pad=Math.min(span*0.5, w*0.12);
+    leaves.forEach((id,i)=>{
+      const t=leaves.length===1?0.5:i/(leaves.length-1);
+      const a=ang+pad+(w-2*pad)*t;
+      const r=R_LEAF[i%2];
+      nodes[id].x=CX+r*Math.cos(a); nodes[id].y=CY+r*Math.sin(a);
+      nodes[id].ang=a;
+    });
+    ang+=w+gap;
+  });
+}
+layout();
+
+/* ---------- render ---------- */
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("svg"); svg.setAttribute("viewBox",`0 0 ${VW} ${VH}`);
+const gEdges=document.getElementById("edges"), gNodes=document.getElementById("nodes");
+const edgeEls=[];
+edges.forEach(e=>{
+  const a=nodes[e.a], b=nodes[e.b];
+  const p=document.createElementNS(NS,"path");
+  // gentle curve toward center for tree edges
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  const cx=e.t==="xref"?(mx+(CX-mx)*0.18):(mx+(CX-mx)*0.12);
+  const cy=e.t==="xref"?(my+(CY-my)*0.18):(my+(CY-my)*0.12);
+  p.setAttribute("d",`M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}`);
+  p.setAttribute("class","edge"+(e.t==="xref"?" xref":""));
+  p.dataset.a=e.a; p.dataset.b=e.b;
+  gEdges.appendChild(p); edgeEls.push(p);
+});
+const nodeEls={};
+list.forEach(n=>{
+  const g=document.createElementNS(NS,"g");
+  g.setAttribute("class","node "+n.type+(n.type==="leaf"?"":"")); g.dataset.id=n.id;
+  g.setAttribute("transform",`translate(${n.x},${n.y})`);
+  const c=document.createElementNS(NS,"circle");
+  const r=n.type==="root"?17:n.type==="hub"?12:6.5;
+  c.setAttribute("r",r);
+  c.setAttribute("fill",HEX[n.cluster]||"#888");
+  if(n.type==="leaf") c.setAttribute("fill-opacity","0.9");
+  g.appendChild(c);
+  const t=document.createElementNS(NS,"text"); t.setAttribute("class","lbl"); t.textContent=n.label;
+  if(n.type==="root"){ t.setAttribute("text-anchor","middle"); t.setAttribute("y",-26); }
+  else if(n.type==="hub"){ t.setAttribute("text-anchor","middle"); t.setAttribute("y",n.y<CY?-20:30); }
+  else {
+    const right=Math.cos(n.ang)>=-0.15;
+    t.setAttribute("text-anchor",right?"start":"end");
+    t.setAttribute("x",right?12:-12); t.setAttribute("y",4);
+  }
+  g.appendChild(t);
+  gNodes.appendChild(g); nodeEls[n.id]=g;
+  g.addEventListener("mouseenter",()=>focus(n.id));
+  g.addEventListener("mouseleave",()=>{ if(!selected) clearFocus(); });
+  g.addEventListener("click",e=>{ e.stopPropagation(); select(n.id); });
+});
+
+/* ---------- focus / highlight ---------- */
+let selected=null;
+function focus(id){
+  const keep=new Set([id,...adj[id]]);
+  list.forEach(n=>nodeEls[n.id].classList.toggle("dim",!keep.has(n.id)));
+  edgeEls.forEach(p=>{
+    const lit=(p.dataset.a===id||p.dataset.b===id);
+    p.classList.toggle("lit",lit);
+    p.classList.toggle("dim",!lit && !(keep.has(p.dataset.a)&&keep.has(p.dataset.b)));
+  });
+}
+function clearFocus(){
+  if(reviewMode) return applyClusterFilter();
+  list.forEach(n=>nodeEls[n.id].classList.remove("dim"));
+  edgeEls.forEach(p=>p.classList.remove("lit","dim"));
+}
+
+/* ---------- drawer ---------- */
+const drawer=document.getElementById("drawer"), dwTag=document.getElementById("dwTag"),
+  dwTitle=document.getElementById("dwTitle"), dwBody=document.getElementById("dwBody");
+function select(id){
+  const n=nodes[id]; if(n.type==="root"){ return; }
+  selected=id;
+  Object.values(nodeEls).forEach(g=>g.classList.remove("sel"));
+  nodeEls[id].classList.add("sel"); focus(id);
+  dwTag.textContent=CLUSTERS[n.cluster].label; dwTag.style.background=HEX[n.cluster];
+  dwTitle.textContent=n.label;
+  const file=FILE[n.cluster]||"part-1-concepts.md";
+  const href=ARTICLE_BASE+file;
+  let html="";
+  if(reviewMode){
+    html+=`<div id="reveal"><button class="reveal-btn" onclick="document.getElementById('revealBody').style.display='block';this.style.display='none';">Reveal explanation</button>
+      <div id="revealBody" style="display:none">`;
+  }
+  html+=`<p class="brief">${n.brief}</p>`;
+  if(n.sub.length){ html+=`<h3>Key points</h3><ul>${n.sub.map(s=>`<li>${s}</li>`).join("")}</ul>`; }
+  if(reviewMode) html+=`</div></div>`;
+  html+=`<h3>Go deeper</h3><div class="links"><a href="${href}" target="_blank">Read the full section<span class="ar">→</span></a>`;
+  if(n.paper) html+=`<a href="${n.paper[1]}" target="_blank">${n.paper[0]}<span class="ar">↗</span></a>`;
+  html+=`</div>`;
+  const xs=[...adj[id]].filter(x=>nodes[x].type==="leaf");
+  if(xs.length){ html+=`<h3>Connected</h3><div class="xrefchips">${xs.map(x=>`<span class="chip" data-go="${x}">${nodes[x].label}</span>`).join("")}</div>`; }
+  dwBody.innerHTML=html; drawer.classList.add("open");
+  dwBody.querySelectorAll(".chip").forEach(ch=>ch.addEventListener("click",()=>select(ch.dataset.go)));
+}
+function closeDrawer(){ drawer.classList.remove("open"); selected=null;
+  Object.values(nodeEls).forEach(g=>g.classList.remove("sel")); clearFocus(); }
+document.getElementById("dwClose").addEventListener("click",closeDrawer);
+
+/* ---------- search ---------- */
+document.getElementById("search").addEventListener("input",e=>{
+  const q=e.target.value.trim().toLowerCase();
+  if(!q){ clearFocus(); return; }
+  list.forEach(n=>{
+    const hit=n.type!=="root" && (n.label.toLowerCase().includes(q)||n.brief.toLowerCase().includes(q));
+    nodeEls[n.id].classList.toggle("dim",!hit && n.type!=="root");
+  });
+  edgeEls.forEach(p=>p.classList.add("dim"));
+});
+
+/* ---------- legend / cluster filter ---------- */
+const legend=document.getElementById("legend"); const offClusters=new Set();
+clusterOrder.forEach(c=>{
+  const s=document.createElement("span"); s.dataset.c=c;
+  s.innerHTML=`<span class="dot" style="background:${HEX[c]}"></span>${CLUSTERS[c].label}`;
+  s.addEventListener("click",()=>{ if(offClusters.has(c))offClusters.delete(c);else offClusters.add(c);
+    s.classList.toggle("off"); applyClusterFilter(); });
+  legend.appendChild(s);
+});
+function applyClusterFilter(){
+  list.forEach(n=>{ const hide=n.type!=="root" && offClusters.has(n.cluster);
+    nodeEls[n.id].classList.toggle("dim",hide); });
+  edgeEls.forEach(p=>{ const hide=offClusters.has(nodes[p.dataset.a].cluster)||offClusters.has(nodes[p.dataset.b].cluster);
+    p.classList.toggle("dim",hide); p.classList.remove("lit"); });
+}
+
+/* ---------- review mode ---------- */
+let reviewMode=false;
+document.getElementById("reviewBtn").addEventListener("click",function(){
+  reviewMode=!reviewMode; this.classList.toggle("active",reviewMode);
+  this.textContent=reviewMode?"Review: ON":"Review mode";
+});
+
+/* ---------- zoom & pan ---------- */
+const stage=document.getElementById("stage"), vp=document.getElementById("viewport");
+let scale=1, tx=0, ty=0, panning=false, sx=0, sy=0;
+function applyT(){ vp.setAttribute("transform",`translate(${tx},${ty}) scale(${scale})`); }
+stage.addEventListener("wheel",e=>{ e.preventDefault();
+  const rect=svg.getBoundingClientRect(); const mx=(e.clientX-rect.left)/rect.width*VW;
+  const my=(e.clientY-rect.top)/rect.height*VH;
+  const f=e.deltaY<0?1.12:0.89; const ns=Math.min(3,Math.max(0.5,scale*f));
+  tx=mx-(mx-tx)*(ns/scale); ty=my-(my-ty)*(ns/scale); scale=ns; applyT();
+},{passive:false});
+stage.addEventListener("mousedown",e=>{ if(e.target.closest(".node"))return;
+  panning=true; stage.classList.add("grabbing"); sx=e.clientX; sy=e.clientY; });
+window.addEventListener("mousemove",e=>{ if(!panning)return;
+  const rect=svg.getBoundingClientRect();
+  tx+=(e.clientX-sx)/rect.width*VW; ty+=(e.clientY-sy)/rect.height*VH; sx=e.clientX; sy=e.clientY; applyT(); });
+window.addEventListener("mouseup",()=>{ panning=false; stage.classList.remove("grabbing"); });
+stage.addEventListener("click",e=>{ if(!e.target.closest(".node")&&!e.target.closest("#drawer")) closeDrawer(); });
+document.getElementById("resetBtn").addEventListener("click",()=>{ scale=1;tx=0;ty=0;applyT();
+  offClusters.clear(); legend.querySelectorAll("span").forEach(s=>s.classList.remove("off"));
+  document.getElementById("search").value=""; closeDrawer(); });
+applyT();
+
+/* ====================================================================
+   artifact-v3 — added views, derived schema, exports, tooltips, hub.
+   Schema-extension approach (b): the N tuple is unchanged. Sequence is
+   DERIVED from per-cluster array order (Prompt→Context→Harness→Tools→
+   Projects); prerequisites are DERIVED from XREF pairs ([x,y] ⇒ x relates
+   to y). No row edits, no id changes, HEX untouched.
+==================================================================== */
+
+/* ---- derived: ordered leaves, sequence, prerequisites ---- */
+const leafOrder = [];            // global reading order across pillars
+clusterOrder.forEach(c=>N.filter(r=>r[2]===c).forEach(r=>leafOrder.push(r[0])));
+const SEQ = {}; leafOrder.forEach((id,i)=>SEQ[id]=i+1);
+// prerequisites: for an XREF [x,y], whichever node comes earlier in leafOrder
+// is treated as a prerequisite of the later one.
+const PREREQ = {}; leafOrder.forEach(id=>PREREQ[id]=[]);
+XREF.forEach(([x,y])=>{
+  if(SEQ[x]==null||SEQ[y]==null) return;
+  const [early,late] = SEQ[x] < SEQ[y] ? [x,y] : [y,x];
+  if(!PREREQ[late].includes(early)) PREREQ[late].push(early);
+});
+const leavesByCluster = c => N.filter(r=>r[2]===c).map(r=>nodes[r[0]]);
+
+/* ---- view (tab) switching ---- */
+const panes = {
+  overview:document.getElementById("pane-overview"),
+  flashcards:document.getElementById("pane-flashcards"),
+  outline:document.getElementById("pane-outline"),
+  hub:document.getElementById("pane-hub"),
+  hardware:document.getElementById("pane-hardware"),
+};
+const graphChrome = [stage, document.getElementById("legend"),
+  document.querySelector(".hint")];
+let builtPanes = false;
+function setView(view){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.view===view));
+  const graph = view==="graph";
+  graphChrome.forEach(el=>{ if(el) el.style.display = graph?"":"none"; });
+  Object.entries(panes).forEach(([k,el])=>el.classList.toggle("show",k===view));
+  if(!graph){ closeDrawer(); hideTip(); if(!builtPanes){ buildPanes(); builtPanes=true; } }
+}
+document.getElementById("tabs").addEventListener("click",e=>{
+  const t=e.target.closest(".tab"); if(t) setView(t.dataset.view);
+});
+
+/* ---- escape helper ---- */
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+/* ---- build Overview + Outline + Hub (once) ---- */
+function buildPanes(){
+  // Overview
+  const ov = document.getElementById("ovRoot"); let oh="";
+  clusterOrder.forEach(c=>{
+    oh+=`<section class="ov-cluster"><h2><span class="swatch" style="background:${HEX[c]}"></span>${esc(CLUSTERS[c].label)}</h2>`;
+    oh+=`<p class="ov-sub">${leavesByCluster(c).length} concepts</p><div class="ov-grid">`;
+    leavesByCluster(c).forEach(n=>{
+      const file=FILE[n.cluster]||"part-1-concepts.md";
+      oh+=`<article class="ov-card" style="border-left-color:${HEX[c]}">
+        <div class="seq">${String(SEQ[n.id]).padStart(2,"0")}</div>
+        <h3>${esc(n.label)}</h3><p>${esc(n.brief)}</p>`;
+      if(n.sub.length) oh+=`<ul>${n.sub.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`;
+      oh+=`<div class="ov-meta"><a href="${ARTICLE_BASE+file}" target="_blank">Read the section →</a>`;
+      if(n.paper) oh+=`<a href="${n.paper[1]}" target="_blank">${esc(n.paper[0])} ↗</a>`;
+      const pr=PREREQ[n.id];
+      if(pr.length) oh+=`<div class="ov-prereq"><b>Prereqs</b><br>${pr.map(p=>`<span class="pchip">${esc(nodes[p].label)}</span>`).join("")}</div>`;
+      oh+=`</div></article>`;
+    });
+    oh+=`</div></section>`;
+  });
+  ov.innerHTML=oh;
+
+  // Outline (+ inlined diagrams)
+  const out=document.getElementById("outlineRoot"); let lh="";
+  const place = {prompt:DIAGRAMS["prompt-anatomy"], context:DIAGRAMS["data-flow"],
+    harness:DIAGRAMS["react-loop"], tools:DIAGRAMS["serving-stack"]};
+  lh+=DIAGRAMS["local-vs-cloud"];
+  clusterOrder.forEach(c=>{
+    lh+=`<h2><span class="swatch" style="background:${HEX[c]}"></span>${esc(CLUSTERS[c].label)}</h2>`;
+    leavesByCluster(c).forEach(n=>{
+      const file=FILE[n.cluster]||"part-1-concepts.md";
+      lh+=`<h3>${String(SEQ[n.id]).padStart(2,"0")} · ${esc(n.label)}</h3><p class="b">${esc(n.brief)}</p>`;
+      if(n.sub.length) lh+=`<ul>${n.sub.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`;
+      let ln=`<p class="b"><a href="${ARTICLE_BASE+file}" target="_blank">Section</a>`;
+      if(n.paper) ln+=` · <a href="${n.paper[1]}" target="_blank">${esc(n.paper[0])}</a>`;
+      lh+=ln+`</p>`;
+    });
+    if(place[c]) lh+=place[c];
+  });
+  out.innerHTML=lh;
+
+  // Hub
+  const hub=document.getElementById("hubRoot");
+  hub.innerHTML=HUB_LINKS.map(h=>`<div class="hub-card"><div class="k">${esc(h.name)}</div>
+    <div class="d">${esc(h.desc)}</div><span class="tok">${esc(h.token)}</span></div>`).join("");
+}
+
+/* ---- Hub link constellation (tokens kept literal — filled at publish) ---- */
+const HUB_LINKS = [
+  {name:"GitHub repo", desc:"Public guide + project monorepo.", token:"https://github.com/ertugruldmr/local-llm-for-developers-guide"},
+  {name:"Artifact / GitHub Pages", desc:"This interactive map (the hub).", token:"https://ertugruldmr.github.io/local-llm-for-developers-guide/"},
+  {name:"Medium article", desc:"The long-form written guide.", token:"{{MEDIUM_URL}}"},
+  {name:"HF Space · P1", desc:"Review Analyzer live demo.", token:"https://huggingface.co/spaces/ErtugrulDemir/sentiment-analyzer"},
+  {name:"HF Space · P3", desc:"Feedback RAG live demo.", token:"{{HF_SPACE_P3}}"},
+  {name:"LinkedIn", desc:"Author / portfolio binding.", token:"{{LINKEDIN_URL}}"},
+];
+
+/* ---- Flashcards (builds on review-mode idea) ---- */
+const fcOrder = leafOrder.slice();
+let fcDeck = fcOrder.slice(), fcIdx=0, fcFlipped=false;
+const fcCard=document.getElementById("fcCard"), fcCount=document.getElementById("fcCount");
+function renderFC(){
+  const n=nodes[fcDeck[fcIdx]];
+  fcCount.textContent=`${fcIdx+1} / ${fcDeck.length}`;
+  if(!fcFlipped){
+    fcCard.innerHTML=`<span class="fc-tag" style="background:${HEX[n.cluster]}">${esc(CLUSTERS[n.cluster].label)}</span>
+      <div class="fc-front">${esc(n.label)}</div><div class="fc-hint">click to reveal</div>`;
+  } else {
+    let b=`<span class="fc-tag" style="background:${HEX[n.cluster]}">${esc(CLUSTERS[n.cluster].label)}</span>
+      <div class="fc-back"><p>${esc(n.brief)}</p>`;
+    if(n.sub.length) b+=`<h4>Key points</h4><ul>${n.sub.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`;
+    b+=`</div>`; fcCard.innerHTML=b;
+  }
+  fcCard.style.borderTopColor=HEX[n.cluster];
+}
+fcCard.addEventListener("click",()=>{ fcFlipped=!fcFlipped; renderFC(); });
+document.getElementById("fcNext").addEventListener("click",()=>{ fcIdx=(fcIdx+1)%fcDeck.length; fcFlipped=false; renderFC(); });
+document.getElementById("fcPrev").addEventListener("click",()=>{ fcIdx=(fcIdx-1+fcDeck.length)%fcDeck.length; fcFlipped=false; renderFC(); });
+document.getElementById("fcShuffle").addEventListener("click",()=>{
+  for(let i=fcDeck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [fcDeck[i],fcDeck[j]]=[fcDeck[j],fcDeck[i]]; }
+  fcIdx=0; fcFlipped=false; renderFC();
+});
+renderFC();
+
+/* ---- Copy page as Markdown ---- */
+function buildMarkdown(){
+  let md=`# Local LLMs for Developers — Concept Map\n\n`;
+  md+=`An interactive map of the guide: concepts → tools → serve & code → build.\n\n`;
+  clusterOrder.forEach(c=>{
+    md+=`## ${CLUSTERS[c].label}\n\n`;
+    leavesByCluster(c).forEach(n=>{
+      md+=`### ${String(SEQ[n.id]).padStart(2,"0")}. ${n.label}\n\n${n.brief}\n\n`;
+      if(n.sub.length) md+=n.sub.map(s=>`- ${s}`).join("\n")+"\n\n";
+      const pr=PREREQ[n.id];
+      if(pr.length) md+=`*Prerequisites:* ${pr.map(p=>nodes[p].label).join(", ")}\n\n`;
+      if(n.paper) md+=`Paper: [${n.paper[0]}](${n.paper[1]})\n\n`;
+    });
+  });
+  md+=`## Hub\n\n`;
+  HUB_LINKS.forEach(h=>{ md+=`- **${h.name}** — ${h.desc} \`${h.token}\`\n`; });
+  return md+"\n";
+}
+document.getElementById("copyMdBtn").addEventListener("click",function(){
+  const btn=this, md=buildMarkdown();
+  navigator.clipboard.writeText(md).then(()=>{
+    const o=btn.textContent; btn.textContent="Copied ✓"; btn.classList.add("active");
+    setTimeout(()=>{ btn.textContent=o; btn.classList.remove("active"); },1400);
+  }).catch(()=>{ btn.textContent="Copy failed"; setTimeout(()=>btn.textContent="Copy as Markdown",1400); });
+});
+
+/* ---- graph node hover tooltips (additive; does not touch focus logic) ---- */
+const tip=document.getElementById("tooltip");
+function showTip(n,x,y){
+  if(n.type==="root"){ return; }
+  tip.innerHTML=`<b>${esc(n.label)}</b>${esc(n.brief)}`;
+  tip.classList.add("show"); moveTip(x,y);
+}
+function moveTip(x,y){ tip.style.left=Math.min(x+14,window.innerWidth-250)+"px"; tip.style.top=(y+16)+"px"; }
+function hideTip(){ tip.classList.remove("show"); }
+list.forEach(n=>{
+  if(n.type==="root") return;
+  const g=nodeEls[n.id];
+  g.addEventListener("mouseenter",e=>showTip(n,e.clientX,e.clientY));
+  g.addEventListener("mousemove",e=>moveTip(e.clientX,e.clientY));
+  g.addEventListener("mouseleave",hideTip);
+});
+
+/* ---- inlined reference diagrams (namespaced SVG, self-contained) ---- */
+const DIAGRAMS = {
+  "local-vs-cloud": `<figure class="diagram"><svg id="mm-local-vs-cloud" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 586px; background-color: transparent;" viewBox="0 0 586 350" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mm-local-vs-cloud{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;fill:#1A1915;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mm-local-vs-cloud .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mm-local-vs-cloud .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mm-local-vs-cloud .error-icon{fill:hsl(228, 33.3333333333%, 100%);}#mm-local-vs-cloud .error-text{fill:#000000;stroke:#000000;}#mm-local-vs-cloud .edge-thickness-normal{stroke-width:1px;}#mm-local-vs-cloud .edge-thickness-thick{stroke-width:3.5px;}#mm-local-vs-cloud .edge-pattern-solid{stroke-dasharray:0;}#mm-local-vs-cloud .edge-thickness-invisible{stroke-width:0;fill:none;}#mm-local-vs-cloud .edge-pattern-dashed{stroke-dasharray:3;}#mm-local-vs-cloud .edge-pattern-dotted{stroke-dasharray:2;}#mm-local-vs-cloud .marker{fill:#566A92;stroke:#566A92;}#mm-local-vs-cloud .marker.cross{stroke:#566A92;}#mm-local-vs-cloud svg{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;}#mm-local-vs-cloud p{margin:0;}#mm-local-vs-cloud .label{font-family:Iowan Old Style,Palatino,Georgia,serif;color:#1A1915;}#mm-local-vs-cloud .cluster-label text{fill:#000000;}#mm-local-vs-cloud .cluster-label span{color:#000000;}#mm-local-vs-cloud .cluster-label span p{background-color:transparent;}#mm-local-vs-cloud .label text,#mm-local-vs-cloud span{fill:#1A1915;color:#1A1915;}#mm-local-vs-cloud .node rect,#mm-local-vs-cloud .node circle,#mm-local-vs-cloud .node ellipse,#mm-local-vs-cloud .node polygon,#mm-local-vs-cloud .node path{fill:#FAF9F5;stroke:#C96442;stroke-width:1px;}#mm-local-vs-cloud .rough-node .label text,#mm-local-vs-cloud .node .label text,#mm-local-vs-cloud .image-shape .label,#mm-local-vs-cloud .icon-shape .label{text-anchor:middle;}#mm-local-vs-cloud .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mm-local-vs-cloud .rough-node .label,#mm-local-vs-cloud .node .label,#mm-local-vs-cloud .image-shape .label,#mm-local-vs-cloud .icon-shape .label{text-align:center;}#mm-local-vs-cloud .node.clickable{cursor:pointer;}#mm-local-vs-cloud .root .anchor path{fill:#566A92!important;stroke-width:0;stroke:#566A92;}#mm-local-vs-cloud .arrowheadPath{fill:#0f1119;}#mm-local-vs-cloud .edgePath .path{stroke:#566A92;stroke-width:1px;}#mm-local-vs-cloud .flowchart-link{stroke:#566A92;fill:none;}#mm-local-vs-cloud .edgeLabel{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-local-vs-cloud .edgeLabel p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-local-vs-cloud .edgeLabel rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-local-vs-cloud .labelBkg{background-color:rgba(249, 245, 250, 0.5);}#mm-local-vs-cloud .cluster rect{fill:hsl(228, 33.3333333333%, 100%);stroke:hsl(228, 0%, 90%);stroke-width:1px;}#mm-local-vs-cloud .cluster text{fill:#000000;}#mm-local-vs-cloud .cluster span{color:#000000;}#mm-local-vs-cloud div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:12px;background:hsl(228, 33.3333333333%, 100%);border:1px solid hsl(228, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#mm-local-vs-cloud .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#1A1915;}#mm-local-vs-cloud rect.text{fill:none;stroke-width:0;}#mm-local-vs-cloud .icon-shape,#mm-local-vs-cloud .image-shape{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-local-vs-cloud .icon-shape p,#mm-local-vs-cloud .image-shape p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);padding:2px;}#mm-local-vs-cloud .icon-shape .label rect,#mm-local-vs-cloud .image-shape .label rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-local-vs-cloud .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mm-local-vs-cloud .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mm-local-vs-cloud .node .neo-node{stroke:#C96442;}#mm-local-vs-cloud [data-look="neo"].node rect,#mm-local-vs-cloud [data-look="neo"].cluster rect,#mm-local-vs-cloud [data-look="neo"].node polygon{stroke:url(#mm-local-vs-cloud-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-local-vs-cloud [data-look="neo"].swimlane.cluster rect{filter:none;}#mm-local-vs-cloud [data-look="neo"].node path{stroke:url(#mm-local-vs-cloud-gradient);stroke-width:1px;}#mm-local-vs-cloud [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-local-vs-cloud [data-look="neo"].node .neo-line path{stroke:#C96442;filter:none;}#mm-local-vs-cloud [data-look="neo"].node circle{stroke:url(#mm-local-vs-cloud-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-local-vs-cloud [data-look="neo"].node circle .state-start{fill:#000000;}#mm-local-vs-cloud [data-look="neo"].icon-shape .icon{fill:url(#mm-local-vs-cloud-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-local-vs-cloud [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mm-local-vs-cloud-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-local-vs-cloud :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mm-local-vs-cloud_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mm-local-vs-cloud_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M217.781,60.235L204.484,64.696C191.188,69.156,164.594,78.078,151.297,86.039C138,94,138,101,138,104.5L138,108" id="mm-local-vs-cloud-L_P_L_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_P_L_0" data-points="W3sieCI6MjE3Ljc4MTI1LCJ5Ijo2MC4yMzQ2Nzc0MTkzNTQ4NH0seyJ4IjoxMzgsInkiOjg3fSx7IngiOjEzOCwieSI6MTEyfV0=" data-look="classic" marker-end="url(#mm-local-vs-cloud_flowchart-v2-pointEnd)"/><path d="M368.219,60.235L381.516,64.696C394.813,69.156,421.406,78.078,434.703,88.039C448,98,448,109,448,114.5L448,120" id="mm-local-vs-cloud-L_P_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_P_C_0" data-points="W3sieCI6MzY4LjIxODc1LCJ5Ijo2MC4yMzQ2Nzc0MTkzNTQ4NH0seyJ4Ijo0NDgsInkiOjg3fSx7IngiOjQ0OCwieSI6MTI0fV0=" data-look="classic" marker-end="url(#mm-local-vs-cloud_flowchart-v2-pointEnd)"/><path d="M138,190L138,194.167C138,198.333,138,206.667,138,214.333C138,222,138,229,138,232.5L138,236" id="mm-local-vs-cloud-L_L_LO_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_L_LO_0" data-points="W3sieCI6MTM4LCJ5IjoxOTB9LHsieCI6MTM4LCJ5IjoyMTV9LHsieCI6MTM4LCJ5IjoyNDB9XQ==" data-look="classic" marker-end="url(#mm-local-vs-cloud_flowchart-v2-pointEnd)"/><path d="M448,178L448,184.167C448,190.333,448,202.667,448,212.333C448,222,448,229,448,232.5L448,236" id="mm-local-vs-cloud-L_C_CO_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_CO_0" data-points="W3sieCI6NDQ4LCJ5IjoxNzh9LHsieCI6NDQ4LCJ5IjoyMTV9LHsieCI6NDQ4LCJ5IjoyNDB9XQ==" data-look="classic" marker-end="url(#mm-local-vs-cloud_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_P_L_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_P_C_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_L_LO_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_CO_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="mm-local-vs-cloud-flowchart-P-0" data-look="classic" transform="translate(293, 35)"><rect class="basic label-container" style="" x="-75.21875" y="-27" width="150.4375" height="54"/><g class="label" style="" transform="translate(-45.21875, -12)"><rect/><foreignObject width="90.4375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Your prompt</p></span></div></foreignObject></g></g><g class="node default" id="mm-local-vs-cloud-flowchart-L-1" data-look="classic" transform="translate(138, 151)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Local runtime on your machine</p></span></div></foreignObject></g></g><g class="node default" id="mm-local-vs-cloud-flowchart-C-3" data-look="classic" transform="translate(448, 151)"><rect class="basic label-container" style="" x="-67.03125" y="-27" width="134.0625" height="54"/><g class="label" style="" transform="translate(-37.03125, -12)"><rect/><foreignObject width="74.0625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Cloud API</p></span></div></foreignObject></g></g><g class="node default" id="mm-local-vs-cloud-flowchart-LO-5" data-look="classic" transform="translate(138, 291)"><rect class="basic label-container" style="" x="-130" y="-51" width="260" height="102"/><g class="label" style="" transform="translate(-100, -36)"><rect/><foreignObject width="200" height="72"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Data stays local · free after hardware · you control the model</p></span></div></foreignObject></g></g><g class="node default" id="mm-local-vs-cloud-flowchart-CO-7" data-look="classic" transform="translate(448, 291)"><rect class="basic label-container" style="" x="-130" y="-51" width="260" height="102"/><g class="label" style="" transform="translate(-100, -36)"><rect/><foreignObject width="200" height="72"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>Data leaves machine · pay per million tokens · top model capability</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="mm-local-vs-cloud-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mm-local-vs-cloud-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mm-local-vs-cloud-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#C96442" stop-opacity="1"/><stop offset="100%" stop-color="hsl(-72, 0%, 87.0588235294%)" stop-opacity="1"/></linearGradient></svg><figcaption>Local runtime vs. cloud API — the core trade-off.</figcaption></figure>`,
+  "prompt-anatomy": `<figure class="diagram"><svg id="mm-prompt-anatomy" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 1128.89px; background-color: transparent;" viewBox="0 0 1128.890625 278" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mm-prompt-anatomy{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;fill:#1A1915;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mm-prompt-anatomy .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mm-prompt-anatomy .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mm-prompt-anatomy .error-icon{fill:hsl(228, 33.3333333333%, 100%);}#mm-prompt-anatomy .error-text{fill:#000000;stroke:#000000;}#mm-prompt-anatomy .edge-thickness-normal{stroke-width:1px;}#mm-prompt-anatomy .edge-thickness-thick{stroke-width:3.5px;}#mm-prompt-anatomy .edge-pattern-solid{stroke-dasharray:0;}#mm-prompt-anatomy .edge-thickness-invisible{stroke-width:0;fill:none;}#mm-prompt-anatomy .edge-pattern-dashed{stroke-dasharray:3;}#mm-prompt-anatomy .edge-pattern-dotted{stroke-dasharray:2;}#mm-prompt-anatomy .marker{fill:#566A92;stroke:#566A92;}#mm-prompt-anatomy .marker.cross{stroke:#566A92;}#mm-prompt-anatomy svg{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;}#mm-prompt-anatomy p{margin:0;}#mm-prompt-anatomy .label{font-family:Iowan Old Style,Palatino,Georgia,serif;color:#1A1915;}#mm-prompt-anatomy .cluster-label text{fill:#000000;}#mm-prompt-anatomy .cluster-label span{color:#000000;}#mm-prompt-anatomy .cluster-label span p{background-color:transparent;}#mm-prompt-anatomy .label text,#mm-prompt-anatomy span{fill:#1A1915;color:#1A1915;}#mm-prompt-anatomy .node rect,#mm-prompt-anatomy .node circle,#mm-prompt-anatomy .node ellipse,#mm-prompt-anatomy .node polygon,#mm-prompt-anatomy .node path{fill:#FAF9F5;stroke:#C96442;stroke-width:1px;}#mm-prompt-anatomy .rough-node .label text,#mm-prompt-anatomy .node .label text,#mm-prompt-anatomy .image-shape .label,#mm-prompt-anatomy .icon-shape .label{text-anchor:middle;}#mm-prompt-anatomy .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mm-prompt-anatomy .rough-node .label,#mm-prompt-anatomy .node .label,#mm-prompt-anatomy .image-shape .label,#mm-prompt-anatomy .icon-shape .label{text-align:center;}#mm-prompt-anatomy .node.clickable{cursor:pointer;}#mm-prompt-anatomy .root .anchor path{fill:#566A92!important;stroke-width:0;stroke:#566A92;}#mm-prompt-anatomy .arrowheadPath{fill:#0f1119;}#mm-prompt-anatomy .edgePath .path{stroke:#566A92;stroke-width:1px;}#mm-prompt-anatomy .flowchart-link{stroke:#566A92;fill:none;}#mm-prompt-anatomy .edgeLabel{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-prompt-anatomy .edgeLabel p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-prompt-anatomy .edgeLabel rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-prompt-anatomy .labelBkg{background-color:rgba(249, 245, 250, 0.5);}#mm-prompt-anatomy .cluster rect{fill:hsl(228, 33.3333333333%, 100%);stroke:hsl(228, 0%, 90%);stroke-width:1px;}#mm-prompt-anatomy .cluster text{fill:#000000;}#mm-prompt-anatomy .cluster span{color:#000000;}#mm-prompt-anatomy div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:12px;background:hsl(228, 33.3333333333%, 100%);border:1px solid hsl(228, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#mm-prompt-anatomy .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#1A1915;}#mm-prompt-anatomy rect.text{fill:none;stroke-width:0;}#mm-prompt-anatomy .icon-shape,#mm-prompt-anatomy .image-shape{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-prompt-anatomy .icon-shape p,#mm-prompt-anatomy .image-shape p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);padding:2px;}#mm-prompt-anatomy .icon-shape .label rect,#mm-prompt-anatomy .image-shape .label rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-prompt-anatomy .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mm-prompt-anatomy .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mm-prompt-anatomy .node .neo-node{stroke:#C96442;}#mm-prompt-anatomy [data-look="neo"].node rect,#mm-prompt-anatomy [data-look="neo"].cluster rect,#mm-prompt-anatomy [data-look="neo"].node polygon{stroke:url(#mm-prompt-anatomy-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-prompt-anatomy [data-look="neo"].swimlane.cluster rect{filter:none;}#mm-prompt-anatomy [data-look="neo"].node path{stroke:url(#mm-prompt-anatomy-gradient);stroke-width:1px;}#mm-prompt-anatomy [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-prompt-anatomy [data-look="neo"].node .neo-line path{stroke:#C96442;filter:none;}#mm-prompt-anatomy [data-look="neo"].node circle{stroke:url(#mm-prompt-anatomy-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-prompt-anatomy [data-look="neo"].node circle .state-start{fill:#000000;}#mm-prompt-anatomy [data-look="neo"].icon-shape .icon{fill:url(#mm-prompt-anatomy-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-prompt-anatomy [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mm-prompt-anatomy-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-prompt-anatomy :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mm-prompt-anatomy_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mm-prompt-anatomy_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M90.164,62L90.164,66.167C90.164,70.333,90.164,78.667,150.936,89.612C211.709,100.556,333.253,114.113,394.026,120.891L454.798,127.669" id="mm-prompt-anatomy-L_R_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_R_A_0" data-points="W3sieCI6OTAuMTY0MDYyNSwieSI6NjJ9LHsieCI6OTAuMTY0MDYyNSwieSI6ODd9LHsieCI6NDU4Ljc3MzQzNzUsInkiOjEyOC4xMTIzODgzNTczMjM2fV0=" data-look="classic" marker-end="url(#mm-prompt-anatomy_flowchart-v2-pointEnd)"/><path d="M291.875,62L291.875,66.167C291.875,70.333,291.875,78.667,319.037,88.173C346.2,97.679,400.524,108.359,427.686,113.699L454.849,119.038" id="mm-prompt-anatomy-L_I_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_I_A_0" data-points="W3sieCI6MjkxLjg3NSwieSI6NjJ9LHsieCI6MjkxLjg3NSwieSI6ODd9LHsieCI6NDU4Ljc3MzQzNzUsInkiOjExOS44MDk4NTI5MTUxMTYwN31d" data-look="classic" marker-end="url(#mm-prompt-anatomy_flowchart-v2-pointEnd)"/><path d="M469.914,62L469.914,66.167C469.914,70.333,469.914,78.667,476.272,86.656C482.63,94.646,495.346,102.292,501.703,106.116L508.061,109.939" id="mm-prompt-anatomy-L_Ctx_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Ctx_A_0" data-points="W3sieCI6NDY5LjkxNDA2MjUsInkiOjYyfSx7IngiOjQ2OS45MTQwNjI1LCJ5Ijo4N30seyJ4Ijo1MTEuNDg5MzMyOTMyNjkyMywieSI6MTEyfV0=" data-look="classic" marker-end="url(#mm-prompt-anatomy_flowchart-v2-pointEnd)"/><path d="M642.867,62L642.867,66.167C642.867,70.333,642.867,78.667,636.509,86.656C630.151,94.646,617.436,102.292,611.078,106.116L604.72,109.939" id="mm-prompt-anatomy-L_Ex_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Ex_A_0" data-points="W3sieCI6NjQyLjg2NzE4NzUsInkiOjYyfSx7IngiOjY0Mi44NjcxODc1LCJ5Ijo4N30seyJ4Ijo2MDEuMjkxOTE3MDY3MzA3NywieSI6MTEyfV0=" data-look="classic" marker-end="url(#mm-prompt-anatomy_flowchart-v2-pointEnd)"/><path d="M824.078,62L824.078,66.167C824.078,70.333,824.078,78.667,796.388,88.212C768.697,97.758,713.316,108.516,685.625,113.895L657.934,119.274" id="mm-prompt-anatomy-L_D_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_D_A_0" data-points="W3sieCI6ODI0LjA3ODEyNSwieSI6NjJ9LHsieCI6ODI0LjA3ODEyNSwieSI6ODd9LHsieCI6NjU0LjAwNzgxMjUsInkiOjEyMC4wMzcyNDAyNTIxNTk3fV0=" data-look="classic" marker-end="url(#mm-prompt-anatomy_flowchart-v2-pointEnd)"/><path d="M1030.859,62L1030.859,66.167C1030.859,70.333,1030.859,78.667,968.713,89.644C906.568,100.622,782.276,114.244,720.13,121.055L657.984,127.866" id="mm-prompt-anatomy-L_O_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_O_A_0" data-points="W3sieCI6MTAzMC44NTkzNzUsInkiOjYyfSx7IngiOjEwMzAuODU5Mzc1LCJ5Ijo4N30seyJ4Ijo2NTQuMDA3ODEyNSwieSI6MTI4LjMwMTUyMTQzODQ1MDl9XQ==" data-look="classic" marker-end="url(#mm-prompt-anatomy_flowchart-v2-pointEnd)"/><path d="M556.391,166L556.391,170.167C556.391,174.333,556.391,182.667,556.391,190.333C556.391,198,556.391,205,556.391,208.5L556.391,212" id="mm-prompt-anatomy-L_A_M_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_M_0" data-points="W3sieCI6NTU2LjM5MDYyNSwieSI6MTY2fSx7IngiOjU1Ni4zOTA2MjUsInkiOjE5MX0seyJ4Ijo1NTYuMzkwNjI1LCJ5IjoyMTZ9XQ==" data-look="classic" marker-end="url(#mm-prompt-anatomy_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_R_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_I_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_Ctx_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_Ex_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_D_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_O_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_A_M_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="mm-prompt-anatomy-flowchart-R-0" data-look="classic" transform="translate(90.1640625, 35)"><rect class="basic label-container" style="" x="-82.1640625" y="-27" width="164.328125" height="54"/><g class="label" style="" transform="translate(-52.1640625, -12)"><rect/><foreignObject width="104.328125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Role / persona</p></span></div></foreignObject></g></g><g class="node default" id="mm-prompt-anatomy-flowchart-A-1" data-look="classic" transform="translate(556.390625, 139)"><rect class="basic label-container" style="" x="-97.6171875" y="-27" width="195.234375" height="54"/><g class="label" style="" transform="translate(-67.6171875, -12)"><rect/><foreignObject width="135.234375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Assembled prompt</p></span></div></foreignObject></g></g><g class="node default" id="mm-prompt-anatomy-flowchart-I-2" data-look="classic" transform="translate(291.875, 35)"><rect class="basic label-container" style="" x="-69.546875" y="-27" width="139.09375" height="54"/><g class="label" style="" transform="translate(-39.546875, -12)"><rect/><foreignObject width="79.09375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Instruction</p></span></div></foreignObject></g></g><g class="node default" id="mm-prompt-anatomy-flowchart-Ctx-4" data-look="classic" transform="translate(469.9140625, 35)"><rect class="basic label-container" style="" x="-58.4921875" y="-27" width="116.984375" height="54"/><g class="label" style="" transform="translate(-28.4921875, -12)"><rect/><foreignObject width="56.984375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Context</p></span></div></foreignObject></g></g><g class="node default" id="mm-prompt-anatomy-flowchart-Ex-6" data-look="classic" transform="translate(642.8671875, 35)"><rect class="basic label-container" style="" x="-64.4609375" y="-27" width="128.921875" height="54"/><g class="label" style="" transform="translate(-34.4609375, -12)"><rect/><foreignObject width="68.921875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Examples</p></span></div></foreignObject></g></g><g class="node default" id="mm-prompt-anatomy-flowchart-D-8" data-look="classic" transform="translate(824.078125, 35)"><rect class="basic label-container" style="" x="-66.75" y="-27" width="133.5" height="54"/><g class="label" style="" transform="translate(-36.75, -12)"><rect/><foreignObject width="73.5" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Input data</p></span></div></foreignObject></g></g><g class="node default" id="mm-prompt-anatomy-flowchart-O-10" data-look="classic" transform="translate(1030.859375, 35)"><rect class="basic label-container" style="" x="-90.03125" y="-27" width="180.0625" height="54"/><g class="label" style="" transform="translate(-60.03125, -12)"><rect/><foreignObject width="120.0625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Output indicator</p></span></div></foreignObject></g></g><g class="node default" id="mm-prompt-anatomy-flowchart-M-13" data-look="classic" transform="translate(556.390625, 243)"><rect class="basic label-container" style="" x="-52.421875" y="-27" width="104.84375" height="54"/><g class="label" style="" transform="translate(-22.421875, -12)"><rect/><foreignObject width="44.84375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Model</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="mm-prompt-anatomy-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mm-prompt-anatomy-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mm-prompt-anatomy-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#C96442" stop-opacity="1"/><stop offset="100%" stop-color="hsl(-72, 0%, 87.0588235294%)" stop-opacity="1"/></linearGradient></svg><figcaption>Anatomy of a prompt — the six parts.</figcaption></figure>`,
+  "react-loop": `<figure class="diagram"><svg id="mm-react-loop" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 368.258px; background-color: transparent;" viewBox="0 0 368.25799560546875 478.671875" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mm-react-loop{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;fill:#1A1915;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mm-react-loop .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mm-react-loop .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mm-react-loop .error-icon{fill:hsl(228, 33.3333333333%, 100%);}#mm-react-loop .error-text{fill:#000000;stroke:#000000;}#mm-react-loop .edge-thickness-normal{stroke-width:1px;}#mm-react-loop .edge-thickness-thick{stroke-width:3.5px;}#mm-react-loop .edge-pattern-solid{stroke-dasharray:0;}#mm-react-loop .edge-thickness-invisible{stroke-width:0;fill:none;}#mm-react-loop .edge-pattern-dashed{stroke-dasharray:3;}#mm-react-loop .edge-pattern-dotted{stroke-dasharray:2;}#mm-react-loop .marker{fill:#566A92;stroke:#566A92;}#mm-react-loop .marker.cross{stroke:#566A92;}#mm-react-loop svg{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;}#mm-react-loop p{margin:0;}#mm-react-loop .label{font-family:Iowan Old Style,Palatino,Georgia,serif;color:#1A1915;}#mm-react-loop .cluster-label text{fill:#000000;}#mm-react-loop .cluster-label span{color:#000000;}#mm-react-loop .cluster-label span p{background-color:transparent;}#mm-react-loop .label text,#mm-react-loop span{fill:#1A1915;color:#1A1915;}#mm-react-loop .node rect,#mm-react-loop .node circle,#mm-react-loop .node ellipse,#mm-react-loop .node polygon,#mm-react-loop .node path{fill:#FAF9F5;stroke:#C96442;stroke-width:1px;}#mm-react-loop .rough-node .label text,#mm-react-loop .node .label text,#mm-react-loop .image-shape .label,#mm-react-loop .icon-shape .label{text-anchor:middle;}#mm-react-loop .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mm-react-loop .rough-node .label,#mm-react-loop .node .label,#mm-react-loop .image-shape .label,#mm-react-loop .icon-shape .label{text-align:center;}#mm-react-loop .node.clickable{cursor:pointer;}#mm-react-loop .root .anchor path{fill:#566A92!important;stroke-width:0;stroke:#566A92;}#mm-react-loop .arrowheadPath{fill:#0f1119;}#mm-react-loop .edgePath .path{stroke:#566A92;stroke-width:1px;}#mm-react-loop .flowchart-link{stroke:#566A92;fill:none;}#mm-react-loop .edgeLabel{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-react-loop .edgeLabel p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-react-loop .edgeLabel rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-react-loop .labelBkg{background-color:rgba(249, 245, 250, 0.5);}#mm-react-loop .cluster rect{fill:hsl(228, 33.3333333333%, 100%);stroke:hsl(228, 0%, 90%);stroke-width:1px;}#mm-react-loop .cluster text{fill:#000000;}#mm-react-loop .cluster span{color:#000000;}#mm-react-loop div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:12px;background:hsl(228, 33.3333333333%, 100%);border:1px solid hsl(228, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#mm-react-loop .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#1A1915;}#mm-react-loop rect.text{fill:none;stroke-width:0;}#mm-react-loop .icon-shape,#mm-react-loop .image-shape{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-react-loop .icon-shape p,#mm-react-loop .image-shape p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);padding:2px;}#mm-react-loop .icon-shape .label rect,#mm-react-loop .image-shape .label rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-react-loop .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mm-react-loop .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mm-react-loop .node .neo-node{stroke:#C96442;}#mm-react-loop [data-look="neo"].node rect,#mm-react-loop [data-look="neo"].cluster rect,#mm-react-loop [data-look="neo"].node polygon{stroke:url(#mm-react-loop-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-react-loop [data-look="neo"].swimlane.cluster rect{filter:none;}#mm-react-loop [data-look="neo"].node path{stroke:url(#mm-react-loop-gradient);stroke-width:1px;}#mm-react-loop [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-react-loop [data-look="neo"].node .neo-line path{stroke:#C96442;filter:none;}#mm-react-loop [data-look="neo"].node circle{stroke:url(#mm-react-loop-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-react-loop [data-look="neo"].node circle .state-start{fill:#000000;}#mm-react-loop [data-look="neo"].icon-shape .icon{fill:url(#mm-react-loop-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-react-loop [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mm-react-loop-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-react-loop :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mm-react-loop_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-react-loop_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mm-react-loop_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M202.564,62L198.624,66.167C194.685,70.333,186.805,78.667,182.866,86.333C178.926,94,178.926,101,178.926,104.5L178.926,108" id="mm-react-loop-L_Reason_Decide_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Reason_Decide_0" data-points="W3sieCI6MjAyLjU2NDIyNzc2NDQyMzA3LCJ5Ijo2Mn0seyJ4IjoxNzguOTI1NzgxMjUsInkiOjg3fSx7IngiOjE3OC45MjU3ODEyNSwieSI6MTEyfV0=" data-look="classic" marker-end="url(#mm-react-loop_flowchart-v2-pointEnd)"/><path d="M148.969,208.715L138.953,219.874C128.937,231.034,108.906,253.353,98.891,270.012C88.875,286.672,88.875,297.672,88.875,303.172L88.875,308.672" id="mm-react-loop-L_Decide_Act_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Decide_Act_0" data-points="W3sieCI6MTQ4Ljk2ODU5MzYzNDU4OTM1LCJ5IjoyMDguNzE0Njg3Mzg0NTg5MzV9LHsieCI6ODguODc1LCJ5IjoyNzUuNjcxODc1fSx7IngiOjg4Ljg3NSwieSI6MzEyLjY3MTg3NX1d" data-look="classic" marker-end="url(#mm-react-loop_flowchart-v2-pointEnd)"/><path d="M88.875,366.672L88.875,370.839C88.875,375.005,88.875,383.339,99.406,391.439C109.937,399.539,130.998,407.405,141.529,411.339L152.06,415.272" id="mm-react-loop-L_Act_Observe_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Act_Observe_0" data-points="W3sieCI6ODguODc1LCJ5IjozNjYuNjcxODc1fSx7IngiOjg4Ljg3NSwieSI6MzkxLjY3MTg3NX0seyJ4IjoxNTUuODA3MDkxMzQ2MTUzODQsInkiOjQxNi42NzE4NzV9XQ==" data-look="classic" marker-end="url(#mm-react-loop_flowchart-v2-pointEnd)"/><path d="M296.717,416.672L307.307,412.505C317.898,408.339,339.078,400.005,349.668,387.172C360.258,374.339,360.258,357.005,360.258,337.672C360.258,318.339,360.258,297.005,360.258,269.616C360.258,242.227,360.258,208.781,360.258,177.336C360.258,145.891,360.258,116.445,348.148,96.958C336.038,77.471,311.817,67.941,299.707,63.176L287.597,58.412" id="mm-react-loop-L_Observe_Reason_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Observe_Reason_0" data-points="W3sieCI6Mjk2LjcxNzM5NzgzNjUzODQ1LCJ5Ijo0MTYuNjcxODc1fSx7IngiOjM2MC4yNTc4MTI1LCJ5IjozOTEuNjcxODc1fSx7IngiOjM2MC4yNTc4MTI1LCJ5IjozMzkuNjcxODc1fSx7IngiOjM2MC4yNTc4MTI1LCJ5IjoyNzUuNjcxODc1fSx7IngiOjM2MC4yNTc4MTI1LCJ5IjoxNzUuMzM1OTM3NX0seyJ4IjozNjAuMjU3ODEyNSwieSI6ODd9LHsieCI6MjgzLjg3NSwieSI6NTYuOTQ3MTUzNzUwNjY1MDF9XQ==" data-look="classic" marker-end="url(#mm-react-loop_flowchart-v2-pointEnd)"/><path d="M208.883,208.715L218.899,219.874C228.914,231.034,248.945,253.353,258.961,270.012C268.977,286.672,268.977,297.672,268.977,303.172L268.977,308.672" id="mm-react-loop-L_Decide_Done_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Decide_Done_0" data-points="W3sieCI6MjA4Ljg4Mjk2ODg2NTQxMDY1LCJ5IjoyMDguNzE0Njg3Mzg0NTg5MzV9LHsieCI6MjY4Ljk3NjU2MjUsInkiOjI3NS42NzE4NzV9LHsieCI6MjY4Ljk3NjU2MjUsInkiOjMxMi42NzE4NzV9XQ==" data-look="classic" marker-end="url(#mm-react-loop_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_Reason_Decide_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(88.875, 275.671875)"><g class="label" data-id="L_Decide_Act_0" transform="translate(-9.078125, -12)"><foreignObject width="18.15625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>no</p></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_Act_Observe_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_Observe_Reason_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(268.9765625, 275.671875)"><g class="label" data-id="L_Decide_Done_0" transform="translate(-11.3359375, -12)"><foreignObject width="22.671875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>yes</p></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="mm-react-loop-flowchart-Reason-0" data-look="classic" transform="translate(228.09375, 35)"><rect class="basic label-container" style="" x="-55.78125" y="-27" width="111.5625" height="54"/><g class="label" style="" transform="translate(-25.78125, -12)"><rect/><foreignObject width="51.5625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Reason</p></span></div></foreignObject></g></g><g class="node default" id="mm-react-loop-flowchart-Decide-1" data-look="classic" transform="translate(178.92578125, 175.3359375)"><polygon points="63.3359375,0 126.671875,-63.3359375 63.3359375,-126.671875 0,-63.3359375" class="label-container" transform="translate(-62.8359375, 63.3359375)"/><g class="label" style="" transform="translate(-36.3359375, -12)"><rect/><foreignObject width="72.671875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Goal met?</p></span></div></foreignObject></g></g><g class="node default" id="mm-react-loop-flowchart-Act-3" data-look="classic" transform="translate(88.875, 339.671875)"><rect class="basic label-container" style="" x="-80.875" y="-27" width="161.75" height="54"/><g class="label" style="" transform="translate(-50.875, -12)"><rect/><foreignObject width="101.75" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Act: call a tool</p></span></div></foreignObject></g></g><g class="node default" id="mm-react-loop-flowchart-Observe-5" data-look="classic" transform="translate(228.09375, 443.671875)"><rect class="basic label-container" style="" x="-82.1953125" y="-27" width="164.390625" height="54"/><g class="label" style="" transform="translate(-52.1953125, -12)"><rect/><foreignObject width="104.390625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Observe result</p></span></div></foreignObject></g></g><g class="node default" id="mm-react-loop-flowchart-Done-9" data-look="classic" transform="translate(268.9765625, 339.671875)"><rect class="basic label-container" style="" x="-49.2265625" y="-27" width="98.453125" height="54"/><g class="label" style="" transform="translate(-19.2265625, -12)"><rect/><foreignObject width="38.453125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Done</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="mm-react-loop-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mm-react-loop-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mm-react-loop-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#C96442" stop-opacity="1"/><stop offset="100%" stop-color="hsl(-72, 0%, 87.0588235294%)" stop-opacity="1"/></linearGradient></svg><figcaption>The ReAct agent loop: reason → act → observe → repeat.</figcaption></figure>`,
+  "serving-stack": `<figure class="diagram"><svg id="mm-serving-stack" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 1119.52px; background-color: transparent;" viewBox="0 0 1119.515625 302" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mm-serving-stack{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;fill:#1A1915;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mm-serving-stack .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mm-serving-stack .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mm-serving-stack .error-icon{fill:hsl(228, 33.3333333333%, 100%);}#mm-serving-stack .error-text{fill:#000000;stroke:#000000;}#mm-serving-stack .edge-thickness-normal{stroke-width:1px;}#mm-serving-stack .edge-thickness-thick{stroke-width:3.5px;}#mm-serving-stack .edge-pattern-solid{stroke-dasharray:0;}#mm-serving-stack .edge-thickness-invisible{stroke-width:0;fill:none;}#mm-serving-stack .edge-pattern-dashed{stroke-dasharray:3;}#mm-serving-stack .edge-pattern-dotted{stroke-dasharray:2;}#mm-serving-stack .marker{fill:#566A92;stroke:#566A92;}#mm-serving-stack .marker.cross{stroke:#566A92;}#mm-serving-stack svg{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;}#mm-serving-stack p{margin:0;}#mm-serving-stack .label{font-family:Iowan Old Style,Palatino,Georgia,serif;color:#1A1915;}#mm-serving-stack .cluster-label text{fill:#000000;}#mm-serving-stack .cluster-label span{color:#000000;}#mm-serving-stack .cluster-label span p{background-color:transparent;}#mm-serving-stack .label text,#mm-serving-stack span{fill:#1A1915;color:#1A1915;}#mm-serving-stack .node rect,#mm-serving-stack .node circle,#mm-serving-stack .node ellipse,#mm-serving-stack .node polygon,#mm-serving-stack .node path{fill:#FAF9F5;stroke:#C96442;stroke-width:1px;}#mm-serving-stack .rough-node .label text,#mm-serving-stack .node .label text,#mm-serving-stack .image-shape .label,#mm-serving-stack .icon-shape .label{text-anchor:middle;}#mm-serving-stack .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mm-serving-stack .rough-node .label,#mm-serving-stack .node .label,#mm-serving-stack .image-shape .label,#mm-serving-stack .icon-shape .label{text-align:center;}#mm-serving-stack .node.clickable{cursor:pointer;}#mm-serving-stack .root .anchor path{fill:#566A92!important;stroke-width:0;stroke:#566A92;}#mm-serving-stack .arrowheadPath{fill:#0f1119;}#mm-serving-stack .edgePath .path{stroke:#566A92;stroke-width:1px;}#mm-serving-stack .flowchart-link{stroke:#566A92;fill:none;}#mm-serving-stack .edgeLabel{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-serving-stack .edgeLabel p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-serving-stack .edgeLabel rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-serving-stack .labelBkg{background-color:rgba(249, 245, 250, 0.5);}#mm-serving-stack .cluster rect{fill:hsl(228, 33.3333333333%, 100%);stroke:hsl(228, 0%, 90%);stroke-width:1px;}#mm-serving-stack .cluster text{fill:#000000;}#mm-serving-stack .cluster span{color:#000000;}#mm-serving-stack div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:12px;background:hsl(228, 33.3333333333%, 100%);border:1px solid hsl(228, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#mm-serving-stack .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#1A1915;}#mm-serving-stack rect.text{fill:none;stroke-width:0;}#mm-serving-stack .icon-shape,#mm-serving-stack .image-shape{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-serving-stack .icon-shape p,#mm-serving-stack .image-shape p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);padding:2px;}#mm-serving-stack .icon-shape .label rect,#mm-serving-stack .image-shape .label rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-serving-stack .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mm-serving-stack .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mm-serving-stack .node .neo-node{stroke:#C96442;}#mm-serving-stack [data-look="neo"].node rect,#mm-serving-stack [data-look="neo"].cluster rect,#mm-serving-stack [data-look="neo"].node polygon{stroke:url(#mm-serving-stack-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-serving-stack [data-look="neo"].swimlane.cluster rect{filter:none;}#mm-serving-stack [data-look="neo"].node path{stroke:url(#mm-serving-stack-gradient);stroke-width:1px;}#mm-serving-stack [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-serving-stack [data-look="neo"].node .neo-line path{stroke:#C96442;filter:none;}#mm-serving-stack [data-look="neo"].node circle{stroke:url(#mm-serving-stack-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-serving-stack [data-look="neo"].node circle .state-start{fill:#000000;}#mm-serving-stack [data-look="neo"].icon-shape .icon{fill:url(#mm-serving-stack-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-serving-stack [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mm-serving-stack-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-serving-stack :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mm-serving-stack_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-serving-stack_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mm-serving-stack_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M245.156,151L249.323,151C253.49,151,261.823,151,269.49,151C277.156,151,284.156,151,287.656,151L291.156,151" id="mm-serving-stack-L_F_R_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_R_0" data-points="W3sieCI6MjQ1LjE1NjI1LCJ5IjoxNTF9LHsieCI6MjcwLjE1NjI1LCJ5IjoxNTF9LHsieCI6Mjk1LjE1NjI1LCJ5IjoxNTF9XQ==" data-look="classic" marker-end="url(#mm-serving-stack_flowchart-v2-pointEnd)"/><path d="M491.516,151L495.682,151C499.849,151,508.182,151,515.849,151C523.516,151,530.516,151,534.016,151L537.516,151" id="mm-serving-stack-L_R_S_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_R_S_0" data-points="W3sieCI6NDkxLjUxNTYyNSwieSI6MTUxfSx7IngiOjUxNi41MTU2MjUsInkiOjE1MX0seyJ4Ijo1NDEuNTE1NjI1LCJ5IjoxNTF9XQ==" data-look="classic" marker-end="url(#mm-serving-stack_flowchart-v2-pointEnd)"/><path d="M723.628,112L740.776,99.167C757.924,86.333,792.22,60.667,818.297,47.833C844.375,35,862.234,35,871.164,35L880.094,35" id="mm-serving-stack-L_S_V_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_S_V_0" data-points="W3sieCI6NzIzLjYyNzY5Mzk2NTUxNzIsInkiOjExMn0seyJ4Ijo4MjYuNTE1NjI1LCJ5IjozNX0seyJ4Ijo4ODQuMDkzNzUsInkiOjM1fV0=" data-look="classic" marker-end="url(#mm-serving-stack_flowchart-v2-pointEnd)"/><path d="M801.516,151L805.682,151C809.849,151,818.182,151,825.849,151C833.516,151,840.516,151,844.016,151L847.516,151" id="mm-serving-stack-L_S_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_S_C_0" data-points="W3sieCI6ODAxLjUxNTYyNSwieSI6MTUxfSx7IngiOjgyNi41MTU2MjUsInkiOjE1MX0seyJ4Ijo4NTEuNTE1NjI1LCJ5IjoxNTF9XQ==" data-look="classic" marker-end="url(#mm-serving-stack_flowchart-v2-pointEnd)"/><path d="M723.628,190L740.776,202.833C757.924,215.667,792.22,241.333,823.977,254.167C855.734,267,884.953,267,899.563,267L914.172,267" id="mm-serving-stack-L_S_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_S_A_0" data-points="W3sieCI6NzIzLjYyNzY5Mzk2NTUxNzIsInkiOjE5MH0seyJ4Ijo4MjYuNTE1NjI1LCJ5IjoyNjd9LHsieCI6OTE4LjE3MTg3NSwieSI6MjY3fV0=" data-look="classic" marker-end="url(#mm-serving-stack_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_F_R_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_R_S_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_S_V_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_S_C_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_S_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="mm-serving-stack-flowchart-F-0" data-look="classic" transform="translate(126.578125, 151)"><rect class="basic label-container" style="" x="-118.578125" y="-27" width="237.15625" height="54"/><g class="label" style="" transform="translate(-88.578125, -12)"><rect/><foreignObject width="177.15625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Model file: GGUF / MLX</p></span></div></foreignObject></g></g><g class="node default" id="mm-serving-stack-flowchart-R-1" data-look="classic" transform="translate(393.3359375, 151)"><rect class="basic label-container" style="" x="-98.1796875" y="-27" width="196.359375" height="54"/><g class="label" style="" transform="translate(-68.1796875, -12)"><rect/><foreignObject width="136.359375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>LM Studio runtime</p></span></div></foreignObject></g></g><g class="node default" id="mm-serving-stack-flowchart-S-3" data-look="classic" transform="translate(671.515625, 151)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>OpenAI / Anthropic-compatible HTTP server</p></span></div></foreignObject></g></g><g class="node default" id="mm-serving-stack-flowchart-V-5" data-look="classic" transform="translate(981.515625, 35)"><rect class="basic label-container" style="" x="-97.421875" y="-27" width="194.84375" height="54"/><g class="label" style="" transform="translate(-67.421875, -12)"><rect/><foreignObject width="134.84375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>VS Code extension</p></span></div></foreignObject></g></g><g class="node default" id="mm-serving-stack-flowchart-C-7" data-look="classic" transform="translate(981.515625, 151)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>CLI agent: opencode / Claude Code</p></span></div></foreignObject></g></g><g class="node default" id="mm-serving-stack-flowchart-A-9" data-look="classic" transform="translate(981.515625, 267)"><rect class="basic label-container" style="" x="-63.34375" y="-27" width="126.6875" height="54"/><g class="label" style="" transform="translate(-33.34375, -12)"><rect/><foreignObject width="66.6875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>App code</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="mm-serving-stack-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mm-serving-stack-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mm-serving-stack-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#C96442" stop-opacity="1"/><stop offset="100%" stop-color="hsl(-72, 0%, 87.0588235294%)" stop-opacity="1"/></linearGradient></svg><figcaption>The local serving stack.</figcaption></figure>`,
+  "data-flow": `<figure class="diagram"><svg id="mm-data-flow" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 442.094px; background-color: transparent;" viewBox="0 0 442.09375 997.765625" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mm-data-flow{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;fill:#1A1915;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mm-data-flow .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mm-data-flow .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mm-data-flow .error-icon{fill:hsl(228, 33.3333333333%, 100%);}#mm-data-flow .error-text{fill:#000000;stroke:#000000;}#mm-data-flow .edge-thickness-normal{stroke-width:1px;}#mm-data-flow .edge-thickness-thick{stroke-width:3.5px;}#mm-data-flow .edge-pattern-solid{stroke-dasharray:0;}#mm-data-flow .edge-thickness-invisible{stroke-width:0;fill:none;}#mm-data-flow .edge-pattern-dashed{stroke-dasharray:3;}#mm-data-flow .edge-pattern-dotted{stroke-dasharray:2;}#mm-data-flow .marker{fill:#566A92;stroke:#566A92;}#mm-data-flow .marker.cross{stroke:#566A92;}#mm-data-flow svg{font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:16px;}#mm-data-flow p{margin:0;}#mm-data-flow .label{font-family:Iowan Old Style,Palatino,Georgia,serif;color:#1A1915;}#mm-data-flow .cluster-label text{fill:#000000;}#mm-data-flow .cluster-label span{color:#000000;}#mm-data-flow .cluster-label span p{background-color:transparent;}#mm-data-flow .label text,#mm-data-flow span{fill:#1A1915;color:#1A1915;}#mm-data-flow .node rect,#mm-data-flow .node circle,#mm-data-flow .node ellipse,#mm-data-flow .node polygon,#mm-data-flow .node path{fill:#FAF9F5;stroke:#C96442;stroke-width:1px;}#mm-data-flow .rough-node .label text,#mm-data-flow .node .label text,#mm-data-flow .image-shape .label,#mm-data-flow .icon-shape .label{text-anchor:middle;}#mm-data-flow .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mm-data-flow .rough-node .label,#mm-data-flow .node .label,#mm-data-flow .image-shape .label,#mm-data-flow .icon-shape .label{text-align:center;}#mm-data-flow .node.clickable{cursor:pointer;}#mm-data-flow .root .anchor path{fill:#566A92!important;stroke-width:0;stroke:#566A92;}#mm-data-flow .arrowheadPath{fill:#0f1119;}#mm-data-flow .edgePath .path{stroke:#566A92;stroke-width:1px;}#mm-data-flow .flowchart-link{stroke:#566A92;fill:none;}#mm-data-flow .edgeLabel{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-data-flow .edgeLabel p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-data-flow .edgeLabel rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-data-flow .labelBkg{background-color:rgba(249, 245, 250, 0.5);}#mm-data-flow .cluster rect{fill:hsl(228, 33.3333333333%, 100%);stroke:hsl(228, 0%, 90%);stroke-width:1px;}#mm-data-flow .cluster text{fill:#000000;}#mm-data-flow .cluster span{color:#000000;}#mm-data-flow div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:Iowan Old Style,Palatino,Georgia,serif;font-size:12px;background:hsl(228, 33.3333333333%, 100%);border:1px solid hsl(228, 0%, 90%);border-radius:2px;pointer-events:none;z-index:100;}#mm-data-flow .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#1A1915;}#mm-data-flow rect.text{fill:none;stroke-width:0;}#mm-data-flow .icon-shape,#mm-data-flow .image-shape{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);text-align:center;}#mm-data-flow .icon-shape p,#mm-data-flow .image-shape p{background-color:hsl(-72, 33.3333333333%, 97.0588235294%);padding:2px;}#mm-data-flow .icon-shape .label rect,#mm-data-flow .image-shape .label rect{opacity:0.5;background-color:hsl(-72, 33.3333333333%, 97.0588235294%);fill:hsl(-72, 33.3333333333%, 97.0588235294%);}#mm-data-flow .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mm-data-flow .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mm-data-flow .node .neo-node{stroke:#C96442;}#mm-data-flow [data-look="neo"].node rect,#mm-data-flow [data-look="neo"].cluster rect,#mm-data-flow [data-look="neo"].node polygon{stroke:url(#mm-data-flow-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-data-flow [data-look="neo"].swimlane.cluster rect{filter:none;}#mm-data-flow [data-look="neo"].node path{stroke:url(#mm-data-flow-gradient);stroke-width:1px;}#mm-data-flow [data-look="neo"].node .outer-path{filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-data-flow [data-look="neo"].node .neo-line path{stroke:#C96442;filter:none;}#mm-data-flow [data-look="neo"].node circle{stroke:url(#mm-data-flow-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-data-flow [data-look="neo"].node circle .state-start{fill:#000000;}#mm-data-flow [data-look="neo"].icon-shape .icon{fill:url(#mm-data-flow-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-data-flow [data-look="neo"].icon-shape .icon-neo path{stroke:url(#mm-data-flow-gradient);filter:drop-shadow( 1px 2px 2px rgba(185,185,185,1));}#mm-data-flow :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mm-data-flow_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="mm-data-flow_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"/></marker><marker id="mm-data-flow_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M228.688,62L228.688,66.167C228.688,70.333,228.688,78.667,228.688,86.333C228.688,94,228.688,101,228.688,104.5L228.688,108" id="mm-data-flow-L_DS_BE_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_DS_BE_0" data-points="W3sieCI6MjI4LjY4NzUsInkiOjYyfSx7IngiOjIyOC42ODc1LCJ5Ijo4N30seyJ4IjoyMjguNjg3NSwieSI6MTEyfV0=" data-look="classic" marker-end="url(#mm-data-flow_flowchart-v2-pointEnd)"/><path d="M228.688,190L228.688,194.167C228.688,198.333,228.688,206.667,228.688,214.333C228.688,222,228.688,229,228.688,232.5L228.688,236" id="mm-data-flow-L_BE_LLM_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_BE_LLM_0" data-points="W3sieCI6MjI4LjY4NzUsInkiOjE5MH0seyJ4IjoyMjguNjg3NSwieSI6MjE1fSx7IngiOjIyOC42ODc1LCJ5IjoyNDB9XQ==" data-look="classic" marker-end="url(#mm-data-flow_flowchart-v2-pointEnd)"/><path d="M228.688,294L228.688,298.167C228.688,302.333,228.688,310.667,228.688,318.333C228.688,326,228.688,333,228.688,336.5L228.688,340" id="mm-data-flow-L_LLM_V_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_LLM_V_0" data-points="W3sieCI6MjI4LjY4NzUsInkiOjI5NH0seyJ4IjoyMjguNjg3NSwieSI6MzE5fSx7IngiOjIyOC42ODc1LCJ5IjozNDR9XQ==" data-look="classic" marker-end="url(#mm-data-flow_flowchart-v2-pointEnd)"/><path d="M180.272,485.241L165.422,499.477C150.572,513.713,120.872,542.184,106.022,567.087C91.172,591.99,91.172,613.323,91.172,634.656C91.172,655.99,91.172,677.323,91.172,704.665C91.172,732.008,91.172,765.359,91.172,798.711C91.172,832.063,91.172,865.414,92.769,887.616C94.365,909.818,97.559,920.87,99.156,926.397L100.752,931.923" id="mm-data-flow-L_V_FE_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_V_FE_0" data-points="W3sieCI6MTgwLjI3MjIzNTU3NjkyMzA3LCJ5Ijo0ODUuMjQwOTg1NTc2OTIzMX0seyJ4Ijo5MS4xNzE4NzUsInkiOjU3MC42NTYyNX0seyJ4Ijo5MS4xNzE4NzUsInkiOjYzNC42NTYyNX0seyJ4Ijo5MS4xNzE4NzUsInkiOjY5OC42NTYyNX0seyJ4Ijo5MS4xNzE4NzUsInkiOjc5OC43MTA5Mzc1fSx7IngiOjkxLjE3MTg3NSwieSI6ODk4Ljc2NTYyNX0seyJ4IjoxMDEuODYyNjcwODk4NDM3NSwieSI6OTM1Ljc2NTYyNX1d" data-look="classic" marker-end="url(#mm-data-flow_flowchart-v2-pointEnd)"/><path d="M266.781,495.562L275.185,508.078C283.589,520.594,300.396,545.625,308.8,563.641C317.203,581.656,317.203,592.656,317.203,598.156L317.203,603.656" id="mm-data-flow-L_V_Retry_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_V_Retry_0" data-points="W3sieCI6MjY2Ljc4MTQ4MTU3MTc2Mjg3LCJ5Ijo0OTUuNTYyMjY4NDI4MjM3MTN9LHsieCI6MzE3LjIwMzEyNSwieSI6NTcwLjY1NjI1fSx7IngiOjMxNy4yMDMxMjUsInkiOjYwNy42NTYyNX1d" data-look="classic" marker-end="url(#mm-data-flow_flowchart-v2-pointEnd)"/><path d="M317.203,661.656L317.203,667.823C317.203,673.99,317.203,686.323,317.203,697.99C317.203,709.656,317.203,720.656,317.203,726.156L317.203,731.656" id="mm-data-flow-L_Retry_V2_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_Retry_V2_0" data-points="W3sieCI6MzE3LjIwMzEyNSwieSI6NjYxLjY1NjI1fSx7IngiOjMxNy4yMDMxMjUsInkiOjY5OC42NTYyNX0seyJ4IjozMTcuMjAzMTI1LCJ5Ijo3MzUuNjU2MjV9XQ==" data-look="classic" marker-end="url(#mm-data-flow_flowchart-v2-pointEnd)"/><path d="M282.946,827.509L268.818,839.385C254.691,851.261,226.435,875.013,204.319,892.665C182.202,910.318,166.225,921.87,158.237,927.646L150.248,933.422" id="mm-data-flow-L_V2_FE_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_V2_FE_0" data-points="W3sieCI6MjgyLjk0NjAwNDgyMDg5MzcsInkiOjgyNy41MDg1MDQ4MjA4OTM3fSx7IngiOjE5OC4xNzk2ODc1LCJ5Ijo4OTguNzY1NjI1fSx7IngiOjE0Ny4wMDY1OTE3OTY4NzUsInkiOjkzNS43NjU2MjV9XQ==" data-look="classic" marker-end="url(#mm-data-flow_flowchart-v2-pointEnd)"/><path d="M331.937,847.032L334.566,855.654C337.195,864.277,342.453,881.521,345.082,895.643C347.711,909.766,347.711,920.766,347.711,926.266L347.711,931.766" id="mm-data-flow-L_V2_Q_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_V2_Q_0" data-points="W3sieCI6MzMxLjkzNjc2Mjc4NjQ3MDgsInkiOjg0Ny4wMzE5ODcyMTM1MjkyfSx7IngiOjM0Ny43MTA5Mzc1LCJ5Ijo4OTguNzY1NjI1fSx7IngiOjM0Ny43MTA5Mzc1LCJ5Ijo5MzUuNzY1NjI1fV0=" data-look="classic" marker-end="url(#mm-data-flow_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_DS_BE_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_BE_LLM_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_LLM_V_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(91.171875, 698.65625)"><g class="label" data-id="L_V_FE_0" transform="translate(-16.984375, -12)"><foreignObject width="33.96875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>valid</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(317.203125, 570.65625)"><g class="label" data-id="L_V_Retry_0" transform="translate(-24.03125, -12)"><foreignObject width="48.0625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>invalid</p></span></div></foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_Retry_V2_0" transform="translate(0, 0)"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(216.39393, 883.45418)"><g class="label" data-id="L_V2_FE_0" transform="translate(-16.984375, -12)"><foreignObject width="33.96875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>valid</p></span></div></foreignObject></g></g><g class="edgeLabel" transform="translate(347.7109375, 898.765625)"><g class="label" data-id="L_V2_Q_0" transform="translate(-24.03125, -12)"><foreignObject width="48.0625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>invalid</p></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="mm-data-flow-flowchart-DS-0" data-look="classic" transform="translate(228.6875, 35)"><rect class="basic label-container" style="" x="-57.1484375" y="-27" width="114.296875" height="54"/><g class="label" style="" transform="translate(-27.1484375, -12)"><rect/><foreignObject width="54.296875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Dataset</p></span></div></foreignObject></g></g><g class="node default" id="mm-data-flow-flowchart-BE-1" data-look="classic" transform="translate(228.6875, 151)"><rect class="basic label-container" style="" x="-130" y="-39" width="260" height="78"/><g class="label" style="" transform="translate(-100, -24)"><rect/><foreignObject width="200" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;"><span class="nodeLabel"><p>FastAPI backend: openai SDK</p></span></div></foreignObject></g></g><g class="node default" id="mm-data-flow-flowchart-LLM-3" data-look="classic" transform="translate(228.6875, 267)"><rect class="basic label-container" style="" x="-67.5390625" y="-27" width="135.078125" height="54"/><g class="label" style="" transform="translate(-37.5390625, -12)"><rect/><foreignObject width="75.078125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Local LLM</p></span></div></foreignObject></g></g><g class="node default" id="mm-data-flow-flowchart-V-5" data-look="classic" transform="translate(228.6875, 438.828125)"><polygon points="94.828125,0 189.65625,-94.828125 94.828125,-189.65625 0,-94.828125" class="label-container" transform="translate(-94.328125, 94.828125)"/><g class="label" style="" transform="translate(-67.828125, -12)"><rect/><foreignObject width="135.65625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Pydantic validation</p></span></div></foreignObject></g></g><g class="node default" id="mm-data-flow-flowchart-FE-7" data-look="classic" transform="translate(109.6640625, 962.765625)"><rect class="basic label-container" style="" x="-101.6640625" y="-27" width="203.328125" height="54"/><g class="label" style="" transform="translate(-71.6640625, -12)"><rect/><foreignObject width="143.328125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Frontend dashboard</p></span></div></foreignObject></g></g><g class="node default" id="mm-data-flow-flowchart-Retry-9" data-look="classic" transform="translate(317.203125, 634.65625)"><rect class="basic label-container" style="" x="-106.3828125" y="-27" width="212.765625" height="54"/><g class="label" style="" transform="translate(-76.3828125, -12)"><rect/><foreignObject width="152.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Retry once with error</p></span></div></foreignObject></g></g><g class="node default" id="mm-data-flow-flowchart-V2-11" data-look="classic" transform="translate(317.203125, 798.7109375)"><polygon points="63.0546875,0 126.109375,-63.0546875 63.0546875,-126.109375 0,-63.0546875" class="label-container" transform="translate(-62.5546875, 63.0546875)"/><g class="label" style="" transform="translate(-36.0546875, -12)"><rect/><foreignObject width="72.109375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Validation</p></span></div></foreignObject></g></g><g class="node default" id="mm-data-flow-flowchart-Q-15" data-look="classic" transform="translate(347.7109375, 962.765625)"><rect class="basic label-container" style="" x="-86.3828125" y="-27" width="172.765625" height="54"/><g class="label" style="" transform="translate(-56.3828125, -12)"><rect/><foreignObject width="112.765625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="nodeLabel"><p>Quarantine row</p></span></div></foreignObject></g></g></g></g></g><defs><filter id="mm-data-flow-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mm-data-flow-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><linearGradient id="mm-data-flow-gradient" gradientUnits="objectBoundingBox" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#C96442" stop-opacity="1"/><stop offset="100%" stop-color="hsl(-72, 0%, 87.0588235294%)" stop-opacity="1"/></linearGradient></svg><figcaption>RAG data flow: chunk → embed → store → retrieve → inject.</figcaption></figure>`,
+};
+</script>
+
+<script>
+/* ====================================================================
+   HARDWARE PANE — model ↔ GPU sizing. Self-contained IIFE; all DOM
+   ids/classes are hw-prefixed to avoid collisions with the graph view.
+==================================================================== */
+(function(){
+  const TIERS = {
+    frontier:{c:"var(--t-frontier)", label:"Frontier reasoning", peers:"Claude Opus · GPT-5 · Gemini 2.5 Pro"},
+    flagship:{c:"var(--t-flagship)", label:"Flagship general",   peers:"Claude Sonnet · GPT-4o/4.1 · Gemini 2.5 Flash"},
+    fast:    {c:"var(--t-fast)",     label:"Fast / cheap",       peers:"Claude Haiku · GPT-4o-mini · Gemini Flash"},
+    medium:  {c:"var(--t-medium)",   label:"Workhorse local",    peers:"Gemini Flash-Lite class"},
+    small:   {c:"var(--t-small)",    label:"Small / laptop",     peers:"on-device assistant class"},
+    edge:    {c:"var(--t-edge)",     label:"Edge / phone",       peers:"Gemini Nano class"},
+  };
+  const MODELS = [
+    // ---- closed frontier: sizes NOT disclosed; est:true → rough capability-based placeholders, rendered distinctly ----
+    {n:"GPT-5.5",            org:"OpenAI",    p:1800, a:null,nb:1.0,  tier:"frontier", est:true},
+    {n:"Gemini 3 Pro",      org:"Google",    p:1700, a:null,nb:1.0,  tier:"frontier", est:true},
+    {n:"Claude Opus 4.x",   org:"Anthropic", p:1500, a:null,nb:1.0,  tier:"frontier", est:true},
+    {n:"Grok 4",            org:"xAI",       p:1400, a:null,nb:1.0,  tier:"frontier", est:true},
+    // ---- open weight: figures verified mid-2026 against model cards ----
+    {n:"DeepSeek-V4-Pro",    org:"DeepSeek", p:1600, a:49,  nb:1.0,  tier:"frontier"},
+    {n:"Kimi K2.6",          org:"Moonshot", p:1000, a:32,  nb:1.0,  tier:"frontier"},
+    {n:"GLM-5.1",            org:"Z.ai",     p:744,  a:40,  nb:2.0,  tier:"flagship"},
+    {n:"Mistral Large 3",    org:"Mistral",  p:675,  a:41,  nb:1.0,  tier:"frontier"},
+    {n:"DeepSeek-V3.2",      org:"DeepSeek", p:671,  a:37,  nb:1.0,  tier:"frontier"},
+    {n:"Qwen3-Coder",        org:"Alibaba",  p:480,  a:35,  nb:2.0,  tier:"flagship"},
+    {n:"Llama 3.1 405B",     org:"Meta",     p:405,  a:null,nb:2.0,  tier:"flagship"},
+    {n:"GLM-4.6",            org:"Z.ai",     p:355,  a:32,  nb:2.0,  tier:"flagship"},
+    {n:"DeepSeek-V4-Flash",  org:"DeepSeek", p:284,  a:13,  nb:1.0,  tier:"flagship"},
+    {n:"Qwen3-235B-A22B",    org:"Alibaba",  p:235,  a:22,  nb:2.0,  tier:"flagship"},
+    {n:"gpt-oss-120b",       org:"OpenAI",   p:117,  a:5.1, nb:0.55, tier:"flagship", star:true},
+    {n:"Llama 4 Scout",      org:"Meta",     p:109,  a:17,  nb:2.0,  tier:"fast"},
+    {n:"GLM-4.5-Air",        org:"Z.ai",     p:106,  a:12,  nb:2.0,  tier:"fast"},
+    {n:"Qwen3-Next-80B-A3B", org:"Alibaba",  p:80,   a:3,   nb:2.0,  tier:"fast"},
+    {n:"Llama 3.1 70B",      org:"Meta",     p:70,   a:null,nb:2.0,  tier:"fast"},
+    {n:"Qwen3.6-35B-A3B",    org:"Alibaba",  p:35,   a:3,   nb:2.0,  tier:"medium"},
+    {n:"Qwen3-32B",          org:"Alibaba",  p:32,   a:null,nb:2.0,  tier:"medium"},
+    {n:"Qwen3-30B-A3B",      org:"Alibaba",  p:30,   a:3,   nb:2.0,  tier:"medium"},
+    {n:"Gemma 3 27B",        org:"Google",   p:27,   a:null,nb:2.0,  tier:"medium"},
+    {n:"Mistral Small 3.2",  org:"Mistral",  p:24,   a:null,nb:2.0,  tier:"medium"},
+    {n:"gpt-oss-20b",        org:"OpenAI",   p:21,   a:3.6, nb:0.55, tier:"medium", star:true},
+    {n:"Qwen3-14B",          org:"Alibaba",  p:14,   a:null,nb:2.0,  tier:"small"},
+    {n:"Phi-4",              org:"Microsoft",p:14,   a:null,nb:2.0,  tier:"small"},
+    {n:"Gemma 3 12B",        org:"Google",   p:12,   a:null,nb:2.0,  tier:"small"},
+    {n:"Qwen3-8B",           org:"Alibaba",  p:8,    a:null,nb:2.0,  tier:"small"},
+    {n:"Gemma 3 4B",         org:"Google",   p:4,    a:null,nb:2.0,  tier:"edge"},
+    {n:"Qwen3-1.7B",         org:"Alibaba",  p:1.7,  a:null,nb:2.0,  tier:"edge"},
+    {n:"Gemma 3 1B",         org:"Google",   p:1,    a:null,nb:2.0,  tier:"edge"},
+  ];
+  const GPUS = [
+    {g:"consumer", n:"RTX 4060 Ti 16GB",            cap:16,   unit:"× 4060 Ti"},
+    {g:"consumer", n:"RTX 4090 24GB",               cap:24,   unit:"× 4090"},
+    {g:"consumer", n:"RTX 5090 32GB",               cap:32,   unit:"× 5090"},
+    {g:"consumer", n:"Mac M4 Max — 128GB unified",  cap:96,   unit:"× M4 Max", nom:128},
+    {g:"consumer", n:"Mac M3 Ultra — 512GB unified",cap:384,  unit:"× M3 Ultra", nom:512},
+    {g:"datacenter", n:"A100 80GB",                 cap:80,   unit:"× A100"},
+    {g:"datacenter", n:"H100 80GB",                 cap:80,   unit:"× H100"},
+    {g:"datacenter", n:"H200 141GB",                cap:141,  unit:"× H200"},
+    {g:"datacenter", n:"B200 192GB",                cap:192,  unit:"× B200"},
+    {g:"datacenter", n:"MI300X 192GB",              cap:192,  unit:"× MI300X"},
+    {g:"node",     n:"8× H100 node (640GB)",        cap:640,  unit:"× 8×H100 node"},
+    {g:"node",     n:"8× H200 node (1128GB)",       cap:1128, unit:"× 8×H200 node"},
+    {g:"node",     n:"8× B200 node (1536GB)",       cap:1536, unit:"× 8×B200 node"},
+  ];
+  const DEFAULT_GPU = 6; // H100 80GB
+  const BPP = {bf16:2.0, fp8:1.0, q4:0.5};
+  const MIN=0.3, MAX=2400;
+  const state = {mode:"native", gpu:DEFAULT_GPU, scale:"log", peers:false, view:"bars"};
+  // inline GPU card glyph — palette only, no emoji, scales to the serif aesthetic
+  const GPU_ICON = '<svg class="hw-gpuicon" width="22" height="14" viewBox="0 0 22 14" aria-hidden="true">'+
+    '<rect x="1" y="2.5" width="20" height="9" rx="1.6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1"/>'+
+    '<circle cx="6.5" cy="7" r="2.3" fill="none" stroke="var(--accent-dark)" stroke-width="1"/>'+
+    '<rect x="11" y="4.5" width="8" height="2" rx=".6" fill="var(--accent-dark)"/>'+
+    '<rect x="11" y="7.8" width="6" height="2" rx=".6" fill="var(--accent)"/>'+
+    '<rect x="3" y="11.5" width="3" height="1.4" fill="var(--ink)"/>'+
+    '<rect x="9" y="11.5" width="3" height="1.4" fill="var(--ink)"/>'+
+    '<rect x="15" y="11.5" width="3" height="1.4" fill="var(--ink)"/></svg>';
+
+  const bpp = m => state.mode==="native" ? m.nb : BPP[state.mode];
+  const serveGB = m => m.p * bpp(m) * 1.2;
+  function pos(gb){
+    gb = Math.max(MIN, Math.min(MAX, gb));
+    if(state.scale==="log") return (Math.log10(gb)-Math.log10(MIN))/(Math.log10(MAX)-Math.log10(MIN))*100;
+    return gb/MAX*100;
+  }
+  const fmtGB = gb => gb>=100 ? Math.round(gb) : gb>=10 ? gb.toFixed(0) : gb.toFixed(1);
+
+  const gpuSel = document.getElementById("hwGpu");
+  GPUS.forEach((g,i)=>{ const o=document.createElement("option"); o.value=i; o.textContent=g.n; gpuSel.appendChild(o); });
+  gpuSel.value = DEFAULT_GPU;
+
+  const legendEl = document.getElementById("hwLegend");
+  Object.values(TIERS).forEach(t=>{
+    const s=document.createElement("span");
+    s.innerHTML='<span class="hw-tdot" style="background:'+t.c+'"></span>'+t.label;
+    legendEl.appendChild(s);
+  });
+
+  const tt=document.getElementById("hwTiers");
+  tt.innerHTML="<tr><th>Tier</th><th>Open-weight examples</th><th>Closed peers (capability ballpark)</th></tr>";
+  const tierMembers={};
+  MODELS.forEach(m=>{(tierMembers[m.tier]=tierMembers[m.tier]||[]).push(m.n);});
+  Object.entries(TIERS).forEach(([k,t])=>{
+    const ex=(tierMembers[k]||[]).slice(0,4).join(", ");
+    const tr=document.createElement("tr");
+    tr.innerHTML='<td><span class="hw-tdot" style="background:'+t.c+'"></span><span class="hw-cl">'+t.label+'</span></td>'+
+      '<td>'+ex+'</td><td>'+t.peers+'</td>';
+    tt.appendChild(tr);
+  });
+
+  const rowsEl=document.getElementById("hwRows");
+  const axisEl=document.getElementById("hwAxis");
+  const readoutEl=document.getElementById("hwReadout");
+  const chartEl=document.getElementById("hwChart");
+  const unitsEl=document.getElementById("hwUnits");
+  const hwPanel=document.getElementById("pane-hardware");
+
+  function render(){
+    const gpu=GPUS[state.gpu];
+    chartEl.classList.toggle("hw-show-peers", state.peers);
+
+    const openModels = MODELS.filter(m=>!m.est);
+    const fits = openModels.filter(m=>serveGB(m)<=gpu.cap).length;
+    const precLabel = state.mode==="native" ? "native precision" : state.mode.toUpperCase();
+    readoutEl.innerHTML = "At <b>"+precLabel+"</b>, <b>"+fits+" of "+openModels.length+
+      "</b> open-weight models fit in a single <b>"+gpu.n+"</b> ("+gpu.cap+" GB"+(gpu.nom?" usable of "+gpu.nom:"")+"). "+
+      "The orange line marks that capacity — bars past it need multiple units. "+
+      "<b>Dashed</b> rows are closed frontier models: sizes aren't disclosed, so those bars are rough capability-based estimates, not measurements.";
+
+    rowsEl.innerHTML="";
+    MODELS.forEach(m=>{
+      const gb=serveGB(m);
+      const count=Math.ceil(gb/gpu.cap - 1e-9);
+      const w=pos(gb);
+      const tc=TIERS[m.tier].c;
+      const moe = m.a!=null ? "MoE · "+m.a+"B active" : "dense";
+      const peer = TIERS[m.tier].peers;
+      const row=document.createElement("div"); row.className="hw-row"+(m.est?" hw-est":"");
+      const nameMeta = m.est
+        ? '<div class="hw-mmeta">size not disclosed · estimate</div>'
+        : '<div class="hw-mmeta">'+m.p+'B · '+moe+'</div>';
+      const barCls = m.est ? "hw-bar hw-est-bar" : "hw-bar";
+      const barStyle = m.est ? 'width:'+w+'%' : 'width:'+w+'%;background:'+tc;
+      let fitCol;
+      if(m.est){
+        fitCol = '<span class="hw-badge hw-b-est">est. · size n/a</span>';
+      } else {
+        const badgeCls = count<=1 ? "hw-b-ok" : count<=4 ? "hw-b-mid" : "hw-b-bad";
+        const badgeTxt = count<=1 ? "✓ fits 1"+gpu.unit : count+gpu.unit;
+        fitCol = '<span class="hw-gb">'+fmtGB(gb)+' GB</span><span class="hw-badge '+badgeCls+'">'+badgeTxt+'</span>';
+      }
+      row.innerHTML =
+        '<div><div class="hw-mname">'+(m.star?'<span class="hw-star">★ </span>':'')+
+          '<span class="hw-tdot" style="background:'+tc+'"></span>'+m.n+' <span class="hw-org">'+m.org+'</span>'+
+          (m.est?'<span class="hw-estbadge">est · size not disclosed</span>':'')+'</div>'+
+          nameMeta+
+          '<div class="hw-peer">≈ '+peer+'</div></div>'+
+        '<div class="hw-track"><div class="'+barCls+'" style="'+barStyle+'"></div></div>'+
+        '<div class="hw-fit">'+fitCol+'</div>';
+      rowsEl.appendChild(row);
+    });
+
+    const old=rowsEl.querySelector(".hw-thresh"); if(old) old.remove();
+    const th=document.createElement("div"); th.className="hw-thresh";
+    const leftPx=242, rightPx=162;
+    th.style.left="calc("+leftPx+"px + (100% - "+(leftPx+rightPx)+"px) * "+(pos(gpu.cap)/100)+")";
+    th.innerHTML='<span class="hw-cap">'+gpu.cap+' GB</span>';
+    rowsEl.appendChild(th);
+
+    axisEl.innerHTML="";
+    const ticks = state.scale==="log" ? [0.5,2,8,32,128,512,2000] : [400,800,1200,1600,2000,2400];
+    ticks.forEach(t=>{
+      const tk=document.createElement("div"); tk.className="hw-tk";
+      tk.style.left="calc("+leftPx+"px + (100% - "+(leftPx+rightPx)+"px) * "+(pos(t)/100)+")";
+      tk.textContent = t>=1000 ? (t/1000)+"TB-ish" : t+"G";
+      axisEl.appendChild(tk);
+    });
+
+    renderUnits(gpu);
+  }
+
+  const ICON_CAP = 16; // show up to this many glyphs, then collapse to "+N"
+  function renderUnits(gpu){
+    unitsEl.innerHTML="";
+    MODELS.forEach(m=>{
+      const tc=TIERS[m.tier].c;
+      const moe = m.a!=null ? "MoE · "+m.a+"B active" : "dense";
+      const peer = TIERS[m.tier].peers;
+      const row=document.createElement("div"); row.className="hw-units-row"+(m.est?" hw-est":"");
+      let glyphHtml, countHtml;
+      if(m.est){
+        // closed model: no fake precise count
+        glyphHtml = '<span class="hw-more">est. · size not disclosed</span>';
+        countHtml = '<span class="hw-units-count hw-est-count">—</span>';
+      } else {
+        const gb=serveGB(m);
+        const count=Math.max(1, Math.ceil(gb/gpu.cap - 1e-9));
+        const shown=Math.min(count, ICON_CAP);
+        let g="";
+        for(let i=0;i<shown;i++) g+=GPU_ICON;
+        if(count>ICON_CAP) g+='<span class="hw-more">+'+(count-ICON_CAP)+' more</span>';
+        glyphHtml=g;
+        countHtml='<span class="hw-units-count">×'+count+' '+gpu.unit+'</span>';
+      }
+      const nameMeta = m.est
+        ? '<div class="hw-mmeta">size not disclosed · estimate</div>'
+        : '<div class="hw-mmeta">'+m.p+'B · '+moe+'</div>';
+      row.innerHTML =
+        '<div><div class="hw-mname">'+(m.star?'<span class="hw-star">★ </span>':'')+
+          '<span class="hw-tdot" style="background:'+tc+'"></span>'+m.n+' <span class="hw-org">'+m.org+'</span>'+
+          (m.est?'<span class="hw-estbadge">est · size not disclosed</span>':'')+'</div>'+
+          nameMeta+
+          '<div class="hw-peer">≈ '+peer+'</div></div>'+
+        '<div class="hw-glyphs">'+glyphHtml+'</div>'+
+        countHtml;
+      unitsEl.appendChild(row);
+    });
+  }
+
+  document.getElementById("hwSegPrec").addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    state.mode=b.dataset.m;
+    [...e.currentTarget.children].forEach(x=>x.classList.toggle("on",x===b));
+    render();
+  });
+  document.getElementById("hwSegScale").addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    state.scale=b.dataset.s;
+    [...e.currentTarget.children].forEach(x=>x.classList.toggle("on",x===b));
+    render();
+  });
+  document.getElementById("hwSegView").addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    state.view=b.dataset.v;
+    [...e.currentTarget.children].forEach(x=>x.classList.toggle("on",x===b));
+    hwPanel.classList.toggle("hw-mode-units", state.view==="units");
+  });
+  gpuSel.addEventListener("change",e=>{ state.gpu=+e.target.value; render(); });
+  document.getElementById("hwTgPeers").addEventListener("click",e=>{
+    state.peers=!state.peers; e.target.classList.toggle("on",state.peers);
+    e.target.textContent = state.peers ? "Hide capability tier" : "Show capability tier";
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
