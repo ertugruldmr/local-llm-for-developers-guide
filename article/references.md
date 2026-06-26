@@ -103,4 +103,4 @@
 ## Author artifacts (fill in after publishing)
 - GitHub repo: `https://github.com/ertugruldmr/local-llm-for-developers-guide`
 - Interactive overview map (GitHub Pages): `https://ertugruldmr.github.io/local-llm-for-developers-guide/`
-- Published article base URL: `{{MEDIUM_URL}}`
+- Published article base URL: `https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80`

@@ -412,7 +412,7 @@
    CONFIG — edit ARTICLE_BASE after publishing (e.g. your Medium URL).
    While it points to the repo's article files, links work locally too.
 ==================================================================== */
-const ARTICLE_BASE = "../article/";   // or "{{MEDIUM_URL}}" once published
+const ARTICLE_BASE = "../article/";   // or "https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80" once published
 const FILE = { prompt:"part-1-concepts.md", context:"part-1-concepts.md",
   harness:"part-1-concepts.md", tools:"part-2-tools.md", projects:"part-4-projects.md" };
 
@@ -783,7 +783,7 @@ function buildPanes(){
 const HUB_LINKS = [
   {name:"GitHub repo", desc:"Public guide + project monorepo.", url:"https://github.com/ertugruldmr/local-llm-for-developers-guide"},
   {name:"Artifact · GitHub Pages", desc:"This interactive map (the hub).", url:"https://ertugruldmr.github.io/local-llm-for-developers-guide/"},
-  {name:"Medium article", desc:"The long-form written guide.", url:"{{MEDIUM_URL}}"},
+  {name:"Medium article", desc:"The long-form written guide.", url:"https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80"},
   {name:"HF Space · Live demo", desc:"Sentiment Analyzer (Gradio).", url:"https://huggingface.co/spaces/ErtugrulDemir/sentiment-analyzer"},
   {name:"LinkedIn", desc:"Author / portfolio.", url:"{{LINKEDIN_URL}}"},
 ];

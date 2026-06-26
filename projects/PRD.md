@@ -67,4 +67,4 @@ Switching to OpenAI = set `LLM_BASE_URL=https://api.openai.com/v1`, a real `LLM_
 ## 10. Milestones
 1. v1: specs (this folder) + article + interactive map. ✅
 2. v2: implement packages 00–04 with Claude Code; record the open-path build with opencode.
-3. v3: packages 05–06 + Colab H100 serving notebook; publish article and replace `{{MEDIUM_URL}}`.
+3. v3: packages 05–06 + Colab H100 serving notebook; publish article and replace `https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80`.

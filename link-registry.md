@@ -8,7 +8,7 @@
 |-------|------|-------|
 | `https://github.com/ertugruldmr/local-llm-for-developers-guide` | Public repo (PRACTICAL-LLM-GUIDE-FOR-DEVELOPERS) | `https://github.com/ertugruldmr/local-llm-for-developers-guide` |
 | `https://ertugruldmr.github.io/local-llm-for-developers-guide/` | Artifact on GitHub Pages | `https://ertugruldmr.github.io/local-llm-for-developers-guide/` |
-| `{{MEDIUM_URL}}` | Published Medium article (base) | `{{MEDIUM_URL}}` |
+| `https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80` | Published Medium article (base) | `https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80` |
 | `https://huggingface.co/spaces/ErtugrulDemir/sentiment-analyzer` | HF Space — **sentiment-app** (the published flagship demo) | `https://huggingface.co/spaces/ErtugrulDemir/sentiment-analyzer` |
 | `https://huggingface.co/spaces/ErtugrulDemir/sentiment-analyzer` | HF Space — P1 Review Analyzer demo (extras, later) | `https://huggingface.co/spaces/ErtugrulDemir/sentiment-analyzer` |
 | `{{HF_SPACE_P3}}` | HF Space — P3 Feedback RAG demo (extras, later) | `{{HF_SPACE_P3}}` |
@@ -29,8 +29,8 @@ flowchart LR
 ```
 
 ## Where each token is consumed
-- `article/*.md` footers + `article/references.md` "Author artifacts" (`{{MEDIUM_URL}}`, `https://github.com/ertugruldmr/local-llm-for-developers-guide`, `https://ertugruldmr.github.io/local-llm-for-developers-guide/`).
-- `artifact/index.html` — `ARTICLE_BASE`/`{{MEDIUM_URL}}` today; hub links panel (artifact-v3) reads all tokens.
+- `article/*.md` footers + `article/references.md` "Author artifacts" (`https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80`, `https://github.com/ertugruldmr/local-llm-for-developers-guide`, `https://ertugruldmr.github.io/local-llm-for-developers-guide/`).
+- `artifact/index.html` — `ARTICLE_BASE`/`https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80` today; hub links panel (artifact-v3) reads all tokens.
 - `README.md` — badges + "Live demo / Article / Map" links.
 - `projects/*/README.md` — link back to its HF Space + the article section.
 

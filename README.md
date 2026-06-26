@@ -35,7 +35,7 @@ local-llm-course/
 2. **Host the interactive map** (`artifact/index.html`) — a hover/click mind-map that *navigates* the article and doubles as a spaced-repetition review tool. Each node links back to the relevant article section.
 3. **Build the projects** (`projects/*.md`) — PRD-first specs you implement as a monorepo (with Claude Code and/or opencode + a local model).
 
-The article and the artifact are cross-linked. The artifact uses a placeholder `{{MEDIUM_URL}}` for the published article base URL — find-and-replace it once after publishing.
+The article and the artifact are cross-linked. The artifact uses a placeholder `https://medium.com/@ertugrulbusiness/running-and-building-with-local-llms-a-practical-guide-for-developers-26210883fe80` for the published article base URL — find-and-replace it once after publishing.
 
 ## Publish the interactive map on GitHub Pages (free URL)
 
