@@ -770,18 +770,22 @@ function buildPanes(){
 
   // Hub
   const hub=document.getElementById("hubRoot");
-  hub.innerHTML=HUB_LINKS.map(h=>`<div class="hub-card"><div class="k">${esc(h.name)}</div>
-    <div class="d">${esc(h.desc)}</div><span class="tok">${esc(h.token)}</span></div>`).join("");
+  // Only render resolved links; entries still holding a {{TOKEN}} are hidden
+  // until that URL is filled in (e.g. the Medium article once published).
+  hub.innerHTML=HUB_LINKS.filter(h=>!h.url.includes("{{")).map(h=>
+    `<a class="hub-card" href="${h.url}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block">`
+    +`<div class="k">${esc(h.name)}</div><div class="d">${esc(h.desc)}</div>`
+    +`<span class="tok">${esc(h.url)}</span></a>`).join("");
 }
 
-/* ---- Hub link constellation (tokens kept literal — filled at publish) ---- */
+/* ---- Hub link constellation. Known URLs are filled; {{TOKEN}} entries are
+   hidden until resolved (Medium/LinkedIn filled after the article is live). ---- */
 const HUB_LINKS = [
-  {name:"GitHub repo", desc:"Public guide + project monorepo.", token:"https://github.com/ertugruldmr/local-llm-for-developers-guide"},
-  {name:"Artifact / GitHub Pages", desc:"This interactive map (the hub).", token:"https://ertugruldmr.github.io/local-llm-for-developers-guide/"},
-  {name:"Medium article", desc:"The long-form written guide.", token:"{{MEDIUM_URL}}"},
-  {name:"HF Space · P1", desc:"Review Analyzer live demo.", token:"https://huggingface.co/spaces/ErtugrulDemir/sentiment-analyzer"},
-  {name:"HF Space · P3", desc:"Feedback RAG live demo.", token:"{{HF_SPACE_P3}}"},
-  {name:"LinkedIn", desc:"Author / portfolio binding.", token:"{{LINKEDIN_URL}}"},
+  {name:"GitHub repo", desc:"Public guide + project monorepo.", url:"https://github.com/ertugruldmr/local-llm-for-developers-guide"},
+  {name:"Artifact · GitHub Pages", desc:"This interactive map (the hub).", url:"https://ertugruldmr.github.io/local-llm-for-developers-guide/"},
+  {name:"Medium article", desc:"The long-form written guide.", url:"{{MEDIUM_URL}}"},
+  {name:"HF Space · Live demo", desc:"Sentiment Analyzer (Gradio).", url:"https://huggingface.co/spaces/ErtugrulDemir/sentiment-analyzer"},
+  {name:"LinkedIn", desc:"Author / portfolio.", url:"{{LINKEDIN_URL}}"},
 ];
 
 /* ---- Flashcards (builds on review-mode idea) ---- */
